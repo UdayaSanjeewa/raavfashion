@@ -36,6 +36,8 @@ export default function ProductPage() {
     setProduct(data);
     if (data?.sizes?.length) setSelectedSize(data.sizes[0]);
     if (data?.colors?.length) setSelectedColor(data.colors[0]);
+    // If product has a video, show it first
+    if (data?.videoUrl) setShowVideo(true);
     setIsLoading(false);
   };
 
@@ -47,19 +49,25 @@ export default function ProductPage() {
     return diffInHours < 24 ? `${diffInHours}h ago` : `${Math.floor(diffInHours / 24)}d ago`;
   };
 
+  // Video is first slot; images follow
   const nextImage = () => {
     if (!product) return;
     if (showVideo) { setShowVideo(false); setSelectedImage(0); return; }
     const next = selectedImage + 1;
-    if (next >= product.images.length && product.videoUrl) { setShowVideo(true); }
-    else { setSelectedImage(next % product.images.length); }
+    if (next >= product.images.length) {
+      if (product.videoUrl) { setShowVideo(true); } else { setSelectedImage(0); }
+    } else {
+      setSelectedImage(next);
+    }
   };
   const prevImage = () => {
     if (!product) return;
     if (showVideo) { setShowVideo(false); setSelectedImage(product.images.length - 1); return; }
-    const prev = selectedImage - 1;
-    if (prev < 0 && product.videoUrl) { setShowVideo(true); }
-    else { setSelectedImage((prev + product.images.length) % product.images.length); }
+    if (selectedImage === 0) {
+      if (product.videoUrl) { setShowVideo(true); } else { setSelectedImage(product.images.length - 1); }
+    } else {
+      setSelectedImage(selectedImage - 1);
+    }
   };
 
   if (isLoading) {
@@ -145,18 +153,9 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Thumbnails — images + optional video thumb */}
+              {/* Thumbnails — video first, then images */}
               {(product.images.length > 1 || product.videoUrl) && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
-                  {product.images.map((img, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { setShowVideo(false); setSelectedImage(i); }}
-                      className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${!showVideo && selectedImage === i ? 'border-rose-500 ring-2 ring-rose-200' : 'border-gray-200'}`}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
                   {product.videoUrl && (
                     <button
                       onClick={() => setShowVideo(true)}
@@ -170,6 +169,15 @@ export default function ProductPage() {
                       </div>
                     </button>
                   )}
+                  {product.images.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setShowVideo(false); setSelectedImage(i); }}
+                      className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${!showVideo && selectedImage === i ? 'border-rose-500 ring-2 ring-rose-200' : 'border-gray-200'}`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

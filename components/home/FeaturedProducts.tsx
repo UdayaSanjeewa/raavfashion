@@ -157,7 +157,7 @@ export function FeaturedProducts() {
               return (
                 <div key={product.id} className="group">
                   {/* Image */}
-                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-3">
+                  <Link href={`/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden bg-gray-100 mb-3">
                     {product.images[0] && (
                       <Image
                         src={product.images[0]}
@@ -182,7 +182,7 @@ export function FeaturedProducts() {
                     </div>
 
                     {/* Wishlist */}
-                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200" onClick={(e) => e.preventDefault()}>
                       <WatchlistButton
                         product={product}
                         className="bg-white h-8 w-8 rounded-full shadow-sm border border-gray-100"
@@ -190,14 +190,14 @@ export function FeaturedProducts() {
                     </div>
 
                     {/* Quick add */}
-                    <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
+                    <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" onClick={(e) => e.preventDefault()}>
                       <AddToCartButton
                         product={product}
                         size="sm"
                         className="w-full rounded-none h-10 text-[10px] tracking-[0.15em] font-semibold uppercase bg-black text-white hover:bg-gray-900 border-0"
                       />
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Info */}
                   <Link href={`/product/${product.id}`} className="block">
