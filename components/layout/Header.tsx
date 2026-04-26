@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingBag, Menu, X, Heart, CircleHelp as HelpCircle, AlignJustify, ChevronDown, Shirt } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, Heart, User } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useWatchlist } from '@/hooks/useWatchlist';
 import { CartDrawer } from '@/components/cart/CartDrawer';
@@ -14,85 +14,124 @@ import type { Category } from '@/types';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [scrolled, setScrolled] = useState(false);
   const { itemCount } = useCart();
   const { itemCount: watchlistCount } = useWatchlist();
   const router = useRouter();
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getCategories().then(setCategories);
   }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (isSearchOpen && searchRef.current) searchRef.current.focus();
+  }, [isSearchOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+      setIsSearchOpen(false);
     }
   };
 
+  // Nav links — primary categories shown inline on desktop
+  const primaryCategories = categories.slice(0, 5);
+
   return (
     <>
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
-        {/* Top Bar */}
-        <div className="bg-gray-900 text-white text-xs py-2 px-4 text-center hidden md:block">
-          <span>Free island-wide delivery on orders above Rs. 3,000 &nbsp;|&nbsp; Easy 30-day returns &nbsp;|&nbsp; 100% authentic products</span>
-        </div>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? 'bg-white border-b border-gray-100 shadow-sm' : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 md:px-10">
+          <div className="flex items-center justify-between h-16 md:h-20">
 
-        {/* Main Header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-              <div className="w-9 h-9 bg-rose-600 rounded-lg flex items-center justify-center">
-                <Shirt className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-extrabold text-gray-900 leading-none tracking-tight">StyleHub LK</h1>
-                <p className="text-xs text-gray-500 leading-none">Fashion & Lifestyle</p>
-              </div>
-            </Link>
-
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-              <form onSubmit={handleSearch} className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search for clothes, brands, styles..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2.5 pl-11 pr-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-400 focus:border-transparent bg-gray-50 text-sm"
-                />
-                <button
-                  type="submit"
-                  className="absolute left-3.5 top-3 text-gray-400 hover:text-rose-500 transition-colors"
-                >
-                  <Search className="h-4 w-4" />
-                </button>
-              </form>
-            </div>
-
-            {/* Right Side Icons */}
-            <div className="flex items-center space-x-1">
-              <Link href="/help" className="hidden md:flex items-center space-x-1 px-3 py-2 text-gray-600 hover:text-rose-600 transition-colors text-sm">
-                <HelpCircle className="w-4 h-4" />
-                <span className="font-medium">Help</span>
-              </Link>
-
-              <button className="md:hidden p-2 text-gray-600 hover:text-gray-900">
-                <Link href="/search">
-                  <Search className="w-5 h-5" />
-                </Link>
+            {/* LEFT — Mobile hamburger + Desktop nav links */}
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setIsMenuOpen(true)}
+                className={`md:hidden p-1 transition-colors ${scrolled ? 'text-gray-900' : 'text-white'}`}
+                aria-label="Open menu"
+              >
+                <Menu className="w-6 h-6" />
               </button>
 
+              {/* Desktop links */}
+              <nav className="hidden md:flex items-center gap-7">
+                {primaryCategories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/categories/${cat.slug}`}
+                    className={`text-xs font-bold tracking-[0.12em] uppercase transition-colors hover-underline ${
+                      scrolled ? 'text-gray-900 hover:text-black' : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+                <Link
+                  href="/categories"
+                  className={`text-xs font-bold tracking-[0.12em] uppercase transition-colors hover-underline ${
+                    scrolled ? 'text-gray-500 hover:text-black' : 'text-white/50 hover:text-white'
+                  }`}
+                >
+                  All
+                </Link>
+              </nav>
+            </div>
+
+            {/* CENTER — Logo */}
+            <Link
+              href="/"
+              className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center"
+            >
+              <span
+                className={`text-xl md:text-2xl font-black tracking-[0.08em] uppercase transition-colors leading-none ${
+                  scrolled ? 'text-black' : 'text-white'
+                }`}
+              >
+                StyleHub
+              </span>
+              <span
+                className={`text-[9px] tracking-[0.3em] uppercase font-medium transition-colors ${
+                  scrolled ? 'text-gray-400' : 'text-white/50'
+                }`}
+              >
+                Sri Lanka
+              </span>
+            </Link>
+
+            {/* RIGHT — Icons */}
+            <div className="flex items-center gap-1 md:gap-2">
+              {/* Search */}
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className={`p-2 transition-colors ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white/80 hover:text-white'}`}
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              {/* Wishlist */}
               <div className="hidden sm:block">
                 <WatchlistDrawer>
-                  <button className="flex p-2 text-gray-600 hover:text-rose-600 transition-colors relative">
+                  <button className={`p-2 transition-colors relative ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white/80 hover:text-white'}`}>
                     <Heart className="w-5 h-5" />
                     {watchlistCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                      <span className="absolute -top-0.5 -right-0.5 bg-black text-white text-[9px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none">
                         {watchlistCount}
                       </span>
                     )}
@@ -100,127 +139,99 @@ export function Header() {
                 </WatchlistDrawer>
               </div>
 
+              {/* Account */}
               <div className="hidden sm:block">
                 <AuthButton />
               </div>
 
+              {/* Cart */}
               <CartDrawer>
-                <button className="flex items-center space-x-1.5 px-3 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors relative text-sm font-medium">
-                  <ShoppingBag className="w-4 h-4" />
-                  <span className="hidden sm:block">Bag</span>
+                <button className={`p-2 transition-colors relative ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white/80 hover:text-white'}`}>
+                  <ShoppingBag className="w-5 h-5" />
                   {itemCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    <span className="absolute -top-0.5 -right-0.5 bg-black text-white text-[9px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none">
                       {itemCount}
                     </span>
                   )}
                 </button>
               </CartDrawer>
-
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden p-2 text-gray-600 hover:text-gray-900"
-              >
-                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
             </div>
+
           </div>
         </div>
+      </header>
 
-        {/* Navigation */}
-        <nav className="border-t border-gray-100 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="hidden md:flex items-center space-x-1 py-3">
-              <div className="relative mr-2">
-                <button
-                  onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors font-medium text-sm"
-                >
-                  <AlignJustify className="w-4 h-4" />
-                  <span>All Categories</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isCategoriesOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isCategoriesOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setIsCategoriesOpen(false)} />
-                    <div className="absolute top-full left-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20">
-                      {categories.map((category) => (
-                        <Link
-                          key={category.id}
-                          href={`/categories/${category.slug}`}
-                          onClick={() => setIsCategoriesOpen(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                        >
-                          {category.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {categories.slice(0, 6).map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/categories/${category.slug}`}
-                  className="text-sm text-gray-700 hover:text-rose-600 font-medium transition-colors whitespace-nowrap px-3 py-2 rounded-lg hover:bg-rose-50"
-                >
-                  {category.name}
-                </Link>
-              ))}
-            </div>
+      {/* FULLSCREEN SEARCH OVERLAY */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+          <div className="flex items-center justify-between px-6 md:px-10 h-16 md:h-20 border-b border-gray-100">
+            <span className="text-xs font-bold tracking-[0.2em] uppercase text-gray-400">Search</span>
+            <button
+              onClick={() => setIsSearchOpen(false)}
+              className="p-2 text-gray-900 hover:text-black"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100">
-            <div className="px-4 py-3 space-y-2">
-              <form onSubmit={handleSearch} className="relative mb-4">
+          <div className="flex-1 flex items-start pt-16 px-6 md:px-10">
+            <form onSubmit={handleSearch} className="w-full max-w-3xl mx-auto">
+              <div className="relative">
                 <input
+                  ref={searchRef}
                   type="text"
-                  placeholder="Search styles..."
+                  placeholder="Search styles, brands, categories..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2.5 pl-10 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-400 text-sm"
+                  className="w-full text-3xl md:text-5xl font-light text-gray-900 placeholder-gray-300 border-0 border-b-2 border-gray-200 focus:border-black pb-4 pr-12 outline-none bg-transparent transition-colors"
                 />
-                <button type="submit" className="absolute left-3 top-3 text-gray-400">
-                  <Search className="h-4 w-4" />
+                <button type="submit" className="absolute right-0 bottom-4 text-gray-400 hover:text-black transition-colors">
+                  <Search className="w-6 h-6" />
                 </button>
-              </form>
+              </div>
+              <p className="mt-5 text-xs text-gray-400 tracking-widest uppercase">Press Enter to search</p>
+            </form>
+          </div>
+        </div>
+      )}
 
-              {categories.map((category) => (
+      {/* MOBILE SIDE MENU */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[60] flex">
+          <div className="bg-black text-white w-80 max-w-full h-full flex flex-col py-8 px-8 overflow-y-auto">
+            <div className="flex items-center justify-between mb-12">
+              <span className="text-sm font-black tracking-[0.15em] uppercase">StyleHub LK</span>
+              <button onClick={() => setIsMenuOpen(false)} className="text-white/60 hover:text-white p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <nav className="flex-1 space-y-1">
+              {categories.map((cat) => (
                 <Link
-                  key={category.id}
-                  href={`/categories/${category.slug}`}
-                  className="block py-2.5 px-3 text-gray-700 hover:text-rose-600 font-medium rounded-lg hover:bg-rose-50 transition-colors text-sm"
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
                   onClick={() => setIsMenuOpen(false)}
+                  className="block py-3 text-xl font-bold text-white/80 hover:text-white transition-colors hover-underline"
                 >
-                  {category.name}
+                  {cat.name}
                 </Link>
               ))}
+            </nav>
 
-              <div className="border-t border-gray-100 pt-3 mt-2 space-y-2">
-                <div className="py-1">
-                  <AuthButton />
-                </div>
-                <WatchlistDrawer>
-                  <button className="w-full text-left py-2.5 px-3 text-gray-700 hover:text-rose-600 text-sm rounded-lg hover:bg-rose-50">
-                    Wishlist ({watchlistCount})
-                  </button>
-                </WatchlistDrawer>
-                <Link
-                  href="/help"
-                  className="block py-2.5 px-3 text-gray-700 hover:text-rose-600 text-sm rounded-lg hover:bg-rose-50"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Help & Support
-                </Link>
-              </div>
+            <div className="border-t border-white/10 pt-6 mt-6 space-y-4">
+              <Link href="/account" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
+                <User className="w-4 h-4" />
+                My Account
+              </Link>
+              <Link href="/help" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
+                Help & Support
+              </Link>
             </div>
           </div>
-        )}
-      </header>
+          {/* Backdrop */}
+          <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+        </div>
+      )}
     </>
   );
 }

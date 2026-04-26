@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getCategories } from '@/lib/products';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { Category } from '@/types';
 
 export function CategoryGrid() {
@@ -12,142 +12,107 @@ export function CategoryGrid() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadCategories();
+    getCategories().then((data) => { setCategories(data); setIsLoading(false); });
   }, []);
 
-  const loadCategories = async () => {
-    const data = await getCategories();
-    setCategories(data);
-    setIsLoading(false);
-  };
-
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+    <section className="py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-6 md:px-10">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-full mb-4 border border-rose-100">
-            <Sparkles className="h-4 w-4 text-rose-600" />
-            <span className="text-sm font-semibold text-rose-600">Shop by Category</span>
+        {/* Header */}
+        <div className="flex items-end justify-between mb-12">
+          <div>
+            <p className="text-xs font-bold tracking-[0.2em] uppercase text-gray-400 mb-3">Curated For You</p>
+            <h2 className="text-4xl md:text-5xl font-black text-black tracking-tight leading-none">
+              Shop by Category
+            </h2>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-            Explore Our Collections
-          </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Discover the latest fashion trends across our curated categories
-          </p>
+          <Link
+            href="/categories"
+            className="hidden md:flex items-center gap-2 text-sm font-bold tracking-wider uppercase text-black hover-underline group"
+          >
+            View All
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
-              <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
-            </div>
-          </div>
-        ) : categories.length === 0 ? (
-          <div className="text-center py-16 bg-gray-50 rounded-2xl">
-            <p className="text-gray-500 text-lg">No categories available at the moment</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
-              <Link
-                key={category.id}
-                href={`/categories/${category.slug}`}
-                className="group relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
-                style={{
-                  animation: `fadeInScale 0.6s ease-out ${index * 0.1}s both`
-                }}
-              >
-                <div className="aspect-square relative overflow-hidden">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-rose-600/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                  <div className="absolute bottom-0 left-0 right-0 p-5 text-white transform transition-all duration-300">
-                    <h3 className="font-bold text-xl mb-2 group-hover:text-rose-200 transition-colors duration-300">
-                      {category.name}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-200">
-                        {category.productCount.toLocaleString()} items
-                      </p>
-                      <div className="flex items-center gap-1 text-sm font-semibold group-hover:text-rose-200 transition-colors duration-300">
-                        <span>Shop</span>
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                    <span className="text-xs font-bold text-white">View All</span>
-                  </div>
-                </div>
-
-                {category.productCount > 100 && (
-                  <div className="absolute top-4 left-4">
-                    <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                      Trending
-                    </div>
-                  </div>
-                )}
-
-                <div className="absolute inset-0 ring-2 ring-transparent group-hover:ring-rose-400 rounded-2xl transition-all duration-300"></div>
-              </Link>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-[3/4] bg-gray-100 animate-pulse" />
             ))}
           </div>
+        ) : (
+          <>
+            {/* Primary grid — first two categories large, rest smaller */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              {/* First two — tall */}
+              {categories.slice(0, 2).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
+                  className="group relative overflow-hidden bg-gray-100 col-span-1 md:col-span-1 row-span-2"
+                  style={{ aspectRatio: '3/4' }}
+                >
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover img-zoom"
+                  />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
+                  {/* Label */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/70 mb-1">
+                      {cat.productCount > 0 ? `${cat.productCount}+ items` : 'Explore'}
+                    </p>
+                    <h3 className="text-lg font-black text-white leading-tight">
+                      {cat.name}
+                    </h3>
+                    <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold tracking-[0.15em] uppercase text-white/0 group-hover:text-white/90 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                      Shop Now <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+
+              {/* Remaining — shorter */}
+              {categories.slice(2).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
+                  className="group relative overflow-hidden bg-gray-100"
+                  style={{ aspectRatio: '1/1' }}
+                >
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover img-zoom"
+                  />
+                  <div className="absolute inset-0 bg-black/25 group-hover:bg-black/50 transition-colors duration-500" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-sm font-black text-white leading-tight">
+                      {cat.name}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile view all */}
+            <div className="mt-8 text-center md:hidden">
+              <Link
+                href="/categories"
+                className="inline-flex items-center gap-2 border border-black text-black px-8 py-3 text-xs font-bold tracking-[0.15em] uppercase hover:bg-black hover:text-white transition-colors duration-200"
+              >
+                View All Categories
+              </Link>
+            </div>
+          </>
         )}
-
-        <div className="text-center mt-16">
-          <Link
-            href="/categories"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group"
-          >
-            View All Categories
-            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-          </Link>
-        </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes fadeInScale {
-          from {
-            opacity: 0;
-            transform: scale(0.9) translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-
-        .bg-grid-pattern {
-          background-image:
-            linear-gradient(to right, #e5e7eb 1px, transparent 1px),
-            linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-
-        .bg-size-200 {
-          background-size: 200% auto;
-        }
-
-        .bg-pos-0 {
-          background-position: 0% center;
-        }
-
-        .bg-pos-100 {
-          background-position: 100% center;
-        }
-      `}</style>
     </section>
   );
 }

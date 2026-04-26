@@ -1,187 +1,196 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { ChevronRight, Sparkles, Star, Truck, RefreshCw } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
-const heroSlides = [
+const SLIDES = [
   {
     id: 1,
-    title: "New Season Arrivals",
-    subtitle: "Spring / Summer 2024 Collection",
-    description: "Discover the latest trends in fashion. Curated styles for every occasion, delivered to your doorstep.",
-    image: "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    cta: "Shop New Arrivals",
-    ctaLink: "/search",
-    gradient: "from-rose-600/70 via-pink-600/60 to-rose-800/80"
+    eyebrow: 'New Collection — SS 2024',
+    headline: ['Wear The', 'New Standard'],
+    sub: "Precision-crafted fashion for those who don't settle.",
+    cta: 'Shop New Arrivals',
+    href: '/search',
   },
   {
     id: 2,
-    title: "Men's Collection",
-    subtitle: "Elevate Your Everyday Style",
-    description: "From smart casuals to sharp formals — explore our premium men's fashion range.",
-    image: "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    eyebrow: "Men's Edit",
+    headline: ['Dress With', 'Intention'],
+    sub: 'Sharp, versatile pieces built for modern living.',
     cta: "Shop Men's",
-    ctaLink: "/categories/mens-fashion",
-    gradient: "from-slate-700/80 via-gray-700/70 to-slate-900/80"
+    href: '/categories/mens-fashion',
   },
   {
     id: 3,
-    title: "Traditional Elegance",
-    subtitle: "Handcrafted Heritage Wear",
-    description: "Celebrate Sri Lankan craftsmanship with our exclusive collection of handwoven sarees and ethnic wear.",
-    image: "https://images.pexels.com/photos/3622608/pexels-photo-3622608.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    cta: "Explore Collection",
-    ctaLink: "/categories/traditional-ethnic",
-    gradient: "from-amber-700/70 via-orange-600/60 to-amber-900/80"
-  }
+    eyebrow: 'Heritage Collection',
+    headline: ['Rooted In', 'Craft'],
+    sub: 'Handwoven silks and ethnic wear from Sri Lankan artisans.',
+    cta: 'Explore Heritage',
+    href: '/categories/traditional-ethnic',
+  },
+];
+
+/*
+  Free-to-use fashion runway videos from Pexels
+  These URLs are valid Pexels video embed links
+*/
+const VIDEO_SRCS = [
+  'https://videos.pexels.com/video-files/3066741/3066741-uhd_2560_1440_25fps.mp4',
+  'https://videos.pexels.com/video-files/4763824/4763824-uhd_2560_1440_25fps.mp4',
+  'https://videos.pexels.com/video-files/3249518/3249518-uhd_2560_1440_25fps.mp4',
 ];
 
 export function HeroSection() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [current, setCurrent] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+    setLoaded(true);
+  }, []);
+
+  // Auto-advance every 8s
+  useEffect(() => {
+    timerRef.current = setTimeout(() => {
+      setCurrent((p) => (p + 1) % SLIDES.length);
+    }, 8000);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [current]);
+
+  const goTo = (i: number) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setCurrent(i);
+  };
+
+  const slide = SLIDES[current];
 
   return (
-    <section className="relative min-h-[600px] md:min-h-[680px] lg:min-h-[720px] overflow-hidden bg-gray-900">
-      {heroSlides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
-        >
-          <Image
-            src={slide.image}
-            alt={slide.title}
-            fill
-            className="object-cover object-top"
-            priority={index === 0}
+    <section className="relative h-screen min-h-[600px] max-h-[900px] bg-black overflow-hidden select-none">
+
+      {/* VIDEO BACKGROUND */}
+      <div className="absolute inset-0 z-0">
+        {VIDEO_SRCS.map((src, i) => (
+          <video
+            key={src}
+            src={src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className={`hero-video transition-opacity duration-1000 ${i === current ? 'opacity-100' : 'opacity-0'}`}
+            style={{ zIndex: i === current ? 1 : 0, position: 'absolute', inset: 0 }}
           />
-          <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient}`} />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
-        </div>
-      ))}
+        ))}
+        {/* Dark overlay — gradient from bottom + left side darken */}
+        <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+      </div>
 
-      <div className="relative z-20 h-full min-h-[600px] md:min-h-[680px] lg:min-h-[720px] flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="text-white space-y-8">
-              <div key={currentSlide} className="space-y-6 animate-fadeInUp">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-md rounded-full border border-white/25">
-                  <Sparkles className="h-4 w-4 text-yellow-300" />
-                  <span className="text-sm font-semibold tracking-wide">New Collection Available</span>
-                </div>
+      {/* CONTENT */}
+      <div className="relative z-20 h-full flex flex-col justify-end pb-20 md:pb-28">
+        <div className="max-w-7xl mx-auto px-6 md:px-10 lg:px-16 w-full">
+          <div className="max-w-2xl">
 
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight">
-                  {heroSlides[currentSlide].title.split(' ').map((word, i) => (
-                    <span
-                      key={i}
-                      className="inline-block animate-fadeInUp"
-                      style={{ animationDelay: `${i * 0.08}s` }}
-                    >
-                      {word}{' '}
-                    </span>
-                  ))}
-                </h1>
+            {/* Eyebrow */}
+            <p
+              key={`eyebrow-${current}`}
+              className="fade-up fade-up-1 text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-white/60 mb-5"
+            >
+              {slide.eyebrow}
+            </p>
 
-                <p className="text-2xl md:text-2xl font-semibold text-white/90 tracking-wide">
-                  {heroSlides[currentSlide].subtitle}
-                </p>
+            {/* Headline */}
+            <h1
+              key={`head-${current}`}
+              className="fade-up fade-up-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-none tracking-tight mb-6"
+            >
+              {slide.headline.map((line, i) => (
+                <span key={i} className="block">{line}</span>
+              ))}
+            </h1>
 
-                <p className="text-lg text-white/80 max-w-xl leading-relaxed">
-                  {heroSlides[currentSlide].description}
-                </p>
-              </div>
+            {/* Sub */}
+            <p
+              key={`sub-${current}`}
+              className="fade-up fade-up-3 text-base md:text-lg text-white/70 mb-10 max-w-md leading-relaxed"
+            >
+              {slide.sub}
+            </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href={heroSlides[currentSlide].ctaLink}>
-                  <Button
-                    size="lg"
-                    className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-6 text-base font-bold rounded-xl shadow-2xl hover:shadow-white/25 transition-all duration-300 transform hover:scale-105 group"
-                  >
-                    {heroSlides[currentSlide].cta}
-                    <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-                <Link href="/categories">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-2 border-white/80 text-white hover:bg-white hover:text-gray-900 px-8 py-6 text-base font-bold rounded-xl bg-transparent backdrop-blur-sm transition-all duration-300"
-                  >
-                    Browse All
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 pt-2">
-                {[['15K+', 'Styles'], ['500+', 'Brands'], ['4.9★', 'Rating']].map(([value, label]) => (
-                  <div key={label} className="text-center p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-                    <div className="text-xl font-bold">{value}</div>
-                    <div className="text-xs text-white/75 mt-0.5">{label}</div>
-                  </div>
-                ))}
-              </div>
+            {/* CTA */}
+            <div
+              key={`cta-${current}`}
+              className="fade-up fade-up-3 flex items-center gap-6"
+            >
+              <Link
+                href={slide.href}
+                className="group inline-flex items-center gap-3 bg-white text-black px-7 py-4 text-sm font-bold tracking-wider uppercase hover:bg-gray-100 transition-colors duration-200"
+              >
+                {slide.cta}
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </Link>
+              <Link
+                href="/categories"
+                className="text-sm font-semibold tracking-wider uppercase text-white/70 hover:text-white transition-colors hover-underline"
+              >
+                All Categories
+              </Link>
             </div>
+          </div>
 
-            <div className="hidden lg:block">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-white/10 rounded-3xl blur-2xl" />
-                <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">Why Shop With Us</h3>
-                  <div className="space-y-4">
-                    {[
-                      { icon: Truck, title: 'Free Island-Wide Delivery', desc: 'On orders above Rs. 3,000', color: 'bg-rose-100', iconColor: 'text-rose-600' },
-                      { icon: RefreshCw, title: 'Easy 30-Day Returns', desc: 'Hassle-free return policy', color: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-                      { icon: Star, title: 'Authentic Products Only', desc: 'All sellers are verified', color: 'bg-amber-100', iconColor: 'text-amber-600' }
-                    ].map((item) => (
-                      <div key={item.title} className={`flex items-start gap-4 p-4 ${item.color} rounded-xl hover:scale-105 transition-transform duration-300`}>
-                        <div className={`${item.iconColor} mt-0.5`}>
-                          <item.icon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
-                          <p className="text-xs text-gray-600 mt-0.5">{item.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Slide indicators */}
+          <div className="flex items-center gap-3 mt-12">
+            {SLIDES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className="relative h-[2px] bg-white/20 overflow-hidden transition-all duration-300"
+                style={{ width: i === current ? '48px' : '24px' }}
+              >
+                {i === current && (
+                  <span
+                    className="absolute inset-y-0 left-0 bg-white"
+                    style={{ width: '100%', animation: 'progress 8s linear forwards' }}
+                  />
+                )}
+              </button>
+            ))}
+            <span className="ml-2 text-xs text-white/40 tabular-nums">
+              {String(current + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3 z-30">
-        {heroSlides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => { setCurrentSlide(index); setIsAutoPlaying(false); }}
-            className={`transition-all duration-300 rounded-full ${
-              index === currentSlide ? 'w-10 h-3 bg-white' : 'w-3 h-3 bg-white/50 hover:bg-white/80'
-            }`}
-          />
-        ))}
+      {/* TICKER — scrolling text bar at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white py-3 overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <span key={i} className="flex items-center text-xs font-bold tracking-[0.25em] uppercase text-black mx-0">
+              <span>New Arrivals</span>
+              <span className="mx-8 text-gray-300">—</span>
+              <span>Free Delivery Over Rs. 3,000</span>
+              <span className="mx-8 text-gray-300">—</span>
+              <span>Women's Fashion</span>
+              <span className="mx-8 text-gray-300">—</span>
+              <span>Men's Collection</span>
+              <span className="mx-8 text-gray-300">—</span>
+              <span>Traditional & Ethnic Wear</span>
+              <span className="mx-8 text-gray-300">—</span>
+              <span>30-Day Returns</span>
+              <span className="mx-8 text-gray-300">—</span>
+            </span>
+          ))}
+        </div>
       </div>
 
       <style jsx global>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeInUp {
-          animation: fadeInUp 0.7s ease-out forwards;
+        @keyframes progress {
+          from { transform: scaleX(0); transform-origin: left; }
+          to   { transform: scaleX(1); transform-origin: left; }
         }
       `}</style>
     </section>

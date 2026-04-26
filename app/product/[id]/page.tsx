@@ -158,7 +158,7 @@ export default function ProductPage() {
 
               {/* Price */}
               <div className="flex items-baseline gap-3 mb-5">
-                <span className="text-3xl font-bold text-rose-600">{formatPrice(product.price)}</span>
+                <span className="text-3xl font-bold text-black">{formatPrice(product.price)}</span>
                 {product.originalPrice && (
                   <span className="text-lg text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
                 )}
@@ -177,10 +177,10 @@ export default function ProductPage() {
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-all ${
+                        className={`px-3 py-1.5 border text-sm font-medium transition-all ${
                           selectedSize === size
-                            ? 'border-rose-500 bg-rose-500 text-white'
-                            : 'border-gray-200 text-gray-700 hover:border-rose-300 hover:text-rose-600'
+                            ? 'border-black bg-black text-white'
+                            : 'border-gray-200 text-gray-700 hover:border-gray-900 hover:text-black'
                         }`}
                       >
                         {size}
@@ -202,10 +202,10 @@ export default function ProductPage() {
                       <button
                         key={color}
                         onClick={() => setSelectedColor(color)}
-                        className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-all ${
+                        className={`px-3 py-1.5 border text-sm font-medium transition-all ${
                           selectedColor === color
-                            ? 'border-rose-500 bg-rose-50 text-rose-700'
-                            : 'border-gray-200 text-gray-700 hover:border-rose-300'
+                            ? 'border-black bg-black text-white'
+                            : 'border-gray-200 text-gray-700 hover:border-gray-900'
                         }`}
                       >
                         {color}
@@ -249,8 +249,8 @@ export default function ProductPage() {
               </div>
 
               {/* Seller */}
-              <div className="bg-rose-50 rounded-xl p-4 mb-5 flex items-center gap-3 border border-rose-100">
-                <div className="h-10 w-10 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+              <div className="bg-gray-50 rounded-none p-4 mb-5 flex items-center gap-3 border border-gray-100">
+                <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                   {product.seller.name[0]}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -263,7 +263,7 @@ export default function ProductPage() {
                     <span className="text-xs text-gray-600">{product.seller.rating} rating</span>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="flex-shrink-0 border-rose-200 text-rose-700 hover:bg-rose-100">
+                <Button variant="outline" size="sm" className="flex-shrink-0 border-gray-200 text-gray-700 hover:bg-gray-100 rounded-none">
                   Contact
                 </Button>
               </div>
@@ -290,7 +290,7 @@ export default function ProductPage() {
                   <ul className="space-y-2">
                     {product.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
-                        <span className="text-rose-500 font-bold mt-0.5">✓</span>
+                        <span className="text-black font-bold mt-0.5">✓</span>
                         <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}

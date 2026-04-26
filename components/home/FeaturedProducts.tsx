@@ -4,303 +4,219 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Heart, Star, MapPin, Clock, Eye, BadgeCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Star, ArrowRight, BadgeCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { WatchlistButton } from '@/components/watchlist/WatchlistButton';
+import type { Product } from '@/types';
 
 export function FeaturedProducts() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'all' | 'women' | 'men'>('all');
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
+  useEffect(() => { loadProducts(); }, []);
 
   const loadProducts = async () => {
-    // Get all products, prioritizing featured ones
-    const { data: categoriesData } = await supabase.from('categories').select('*');
-    const { data: productsData } = await supabase
+    const { data: cats } = await supabase.from('categories').select('*');
+    const { data: rows } = await supabase
       .from('products')
       .select('*')
       .order('is_featured', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(12);
 
-    if (!productsData || !categoriesData) {
-      setIsLoading(false);
-      return;
-    }
+    if (!rows || !cats) { setIsLoading(false); return; }
 
-    const formattedProducts = productsData.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      description: p.description,
-      price: p.price,
-      originalPrice: p.original_price,
-      images: p.images,
-      category: categoriesData.find((c: any) => c.id === p.category_id) || {
-        id: '',
-        name: 'Uncategorized',
-        slug: 'uncategorized',
-        image: '',
-        productCount: 0
-      },
-      condition: p.condition,
-      location: p.location || 'Sri Lanka',
-      seller_id: p.seller_id || '',
-      seller: {
-        id: p.seller_id || 'admin',
-        name: p.seller_name,
-        avatar: p.seller_avatar,
-        rating: p.seller_rating
-      },
-      features: p.features || [],
-      tags: p.tags || [],
-      createdAt: p.created_at,
-      updatedAt: p.updated_at,
-      isNew: p.is_new,
-      isFeatured: p.is_featured
-    }));
+    const catMap = new Map(cats.map((c: Record<string, unknown>) => [c.id, c]));
+    const fallback = { id: '', name: 'Uncategorized', slug: 'uncategorized', image: '', productCount: 0 };
 
-    setProducts(formattedProducts);
+    const formatted: Product[] = rows.map((p: Record<string, unknown>) => {
+      const cat = (catMap.get(p.category_id as string) || {}) as Record<string, unknown>;
+      return {
+        id: p.id as string,
+        title: p.title as string,
+        description: (p.description as string) || '',
+        price: p.price as number,
+        originalPrice: p.original_price as number | undefined,
+        images: (p.images as string[]) || [],
+        category: cat.id ? { id: cat.id as string, name: cat.name as string, slug: cat.slug as string, image: (cat.image_url || cat.image) as string, productCount: 0 } : fallback,
+        condition: (p.condition as 'new' | 'used' | 'refurbished') || 'new',
+        location: (p.location as string) || '',
+        seller_id: (p.seller_id as string) || '',
+        seller: { id: (p.seller_id as string) || '', name: (p.seller_name as string) || 'Vendor', avatar: p.seller_avatar as string, rating: (p.seller_rating as number) || 5 },
+        sizes: (p.sizes as string[]) || [],
+        colors: (p.colors as string[]) || [],
+        gender: (p.gender as 'men' | 'women' | 'kids' | 'unisex') || 'unisex',
+        material: (p.material as string) || '',
+        brand: (p.brand as string) || '',
+        style: (p.style as string) || '',
+        stockQuantity: (p.stock_quantity as number) || 0,
+        features: (p.features as string[]) || [],
+        tags: (p.tags as string[]) || [],
+        createdAt: p.created_at as string,
+        updatedAt: p.updated_at as string,
+        isNew: p.is_new as boolean,
+        isFeatured: p.is_featured as boolean,
+      };
+    });
+
+    setProducts(formatted);
     setIsLoading(false);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  const formatPrice = (n: number) =>
+    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', minimumFractionDigits: 0 }).format(n);
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d ago`;
-    }
-  };
+  const tabs: { key: typeof activeTab; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'women', label: "Women's" },
+    { key: 'men', label: "Men's" },
+  ];
+
+  const visible = products.filter((p) => {
+    if (activeTab === 'all') return true;
+    return p.gender === activeTab || p.gender === 'unisex';
+  });
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-dot-pattern opacity-5"></div>
+    <section className="py-24 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-6 md:px-10">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-full mb-4 border border-rose-100">
-            <Star className="h-4 w-4 text-rose-600 fill-current" />
-            <span className="text-sm font-semibold text-rose-600">Featured Styles</span>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <p className="text-xs font-bold tracking-[0.2em] uppercase text-gray-400 mb-3">Handpicked</p>
+            <h2 className="text-4xl md:text-5xl font-black text-black tracking-tight leading-none">
+              Featured Styles
+            </h2>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-            Trending Right Now
-          </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Handpicked fashion pieces loved by our community across Sri Lanka
-          </p>
+          {/* Tabs */}
+          <div className="flex items-center gap-1 bg-white border border-gray-200 p-1">
+            {tabs.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                className={`px-5 py-2 text-xs font-bold tracking-[0.12em] uppercase transition-colors ${
+                  activeTab === t.key
+                    ? 'bg-black text-white'
+                    : 'text-gray-500 hover:text-black'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Products Grid */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500"></div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <div className="aspect-[3/4] bg-gray-200 animate-pulse" />
+                <div className="h-3 bg-gray-200 animate-pulse w-3/4" />
+                <div className="h-3 bg-gray-200 animate-pulse w-1/2" />
+              </div>
+            ))}
           </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No featured products available</p>
+        ) : visible.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-400 text-sm">No products yet — check back soon.</p>
           </div>
         ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, index) => (
-            <div
-              key={product.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-rose-300 transform hover:-translate-y-2"
-              style={{
-                animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both`
-              }}
-            >
-              <Link href={`/product/${product.id}`}>
-                {/* Product Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                <Image
-                  src={product.images[0]}
-                  alt={product.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                
-                {/* Badges */}
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
-                  {product.isFeatured && (
-                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-semibold">
-                      Featured
-                    </Badge>
-                  )}
-                  {product.isNew && (
-                    <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-semibold">
-                      New
-                    </Badge>
-                  )}
-                  {!product.isNew && (
-                    <Badge variant="secondary" className="bg-black/70 text-white border-0 capitalize">
-                      {product.condition}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Favorite Button */}
-                <div className="absolute top-3 right-3">
-                  <WatchlistButton
-                    product={product}
-                    className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
-                  />
-                </div>
-
-                {/* Image Count */}
-                {product.images.length > 1 && (
-                  <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    {product.images.length}
-                  </div>
-                )}
-              </div>
-
-              {/* Product Info */}
-              <div className="p-5">
-                {/* Title & Price */}
-                <div className="mb-3">
-                  <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-rose-600 transition-colors mb-2">
-                    {product.title}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-rose-600">
-                      {formatPrice(product.price)}
-                    </span>
-                    {product.originalPrice && (
-                      <>
-                        <span className="text-sm text-gray-500 line-through">
-                          {formatPrice(product.originalPrice)}
-                        </span>
-                        <Badge variant="destructive" className="text-xs">
-                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                        </Badge>
-                      </>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {visible.map((product) => {
+              const discount = product.originalPrice
+                ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+                : 0;
+              return (
+                <div key={product.id} className="group flex flex-col">
+                  {/* Image */}
+                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-3">
+                    {product.images[0] && (
+                      <Image
+                        src={product.images[0]}
+                        alt={product.title}
+                        fill
+                        className="object-cover img-zoom"
+                      />
                     )}
-                  </div>
-                </div>
 
-                {/* Description */}
-                <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-                  {product.description}
-                </p>
-
-                {/* Seller Info */}
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 bg-gradient-to-r from-rose-400 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                      {product.seller.name[0]}
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium text-sm text-gray-900">
-                          {product.seller.name}
+                    {/* Badges */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                      {discount > 0 && (
+                        <span className="bg-black text-white text-[9px] font-bold tracking-wider uppercase px-2 py-1">
+                          -{discount}%
                         </span>
-                        <BadgeCheck className="h-3 w-3 text-rose-500" />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                        <span className="text-xs text-gray-600">{product.seller.rating}</span>
-                      </div>
+                      )}
+                      {product.isNew && (
+                        <span className="bg-white text-black text-[9px] font-bold tracking-wider uppercase px-2 py-1">
+                          New
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Wishlist */}
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <WatchlistButton
+                        product={product}
+                        className="bg-white shadow-sm h-8 w-8"
+                      />
+                    </div>
+
+                    {/* Quick add — appears on hover */}
+                    <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                      <AddToCartButton product={product} size="sm" className="w-full rounded-none bg-black text-white border-0 h-10 text-[10px] tracking-[0.15em] font-bold uppercase hover:bg-gray-900" />
                     </div>
                   </div>
-                </div>
 
-                {/* Location & Time */}
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    <span>{product.location}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{formatTimeAgo(product.createdAt)}</span>
-                  </div>
-                </div>
-
-                {/* Features */}
-                {product.features.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {product.features.slice(0, 2).map((feature: string, index: number) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="text-xs border-rose-200 text-rose-700"
-                      >
-                        {feature}
-                      </Badge>
-                    ))}
-                    {product.features.length > 2 && (
-                      <Badge variant="outline" className="text-xs border-gray-200 text-gray-600">
-                        +{product.features.length - 2} more
-                      </Badge>
+                  {/* Info */}
+                  <Link href={`/product/${product.id}`} className="flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        {product.brand && (
+                          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-0.5">
+                            {product.brand}
+                          </p>
+                        )}
+                        <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 hover:text-black">
+                          {product.title}
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-sm font-bold text-black">{formatPrice(product.price)}</span>
+                      {product.originalPrice && (
+                        <span className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+                      )}
+                    </div>
+                    {/* Colors preview */}
+                    {product.colors && product.colors.length > 0 && (
+                      <p className="text-[10px] text-gray-400 mt-1.5">
+                        {product.colors.slice(0, 3).join(' · ')}
+                        {product.colors.length > 3 && ` +${product.colors.length - 3}`}
+                      </p>
                     )}
-                  </div>
-                )}
-              </div>
-            </Link>
-
-              {/* Add to Cart Button */}
-              <div className="p-5 pt-0">
-                <div className="pt-3 border-t border-gray-100">
-                  <AddToCartButton
-                    product={product}
-                    size="sm"
-                    className="w-full"
-                  />
+                  </Link>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
         )}
 
-        {/* Load More */}
-        <div className="text-center mt-16">
-          <Link href="/search">
-            <Button
-              size="lg"
-              className="px-10 py-6 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+        {/* View All CTA */}
+        {!isLoading && (
+          <div className="text-center mt-16">
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-3 border border-black text-black px-10 py-4 text-xs font-bold tracking-[0.2em] uppercase hover:bg-black hover:text-white transition-colors duration-200 group"
             >
               View All Products
-            </Button>
-          </Link>
-        </div>
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        )}
       </div>
-
-      <style jsx global>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .bg-dot-pattern {
-          background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
-          background-size: 20px 20px;
-        }
-      `}</style>
     </section>
   );
 }
