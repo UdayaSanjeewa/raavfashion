@@ -2,60 +2,46 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+
+/*
+  RAAV FASHION – Hero Section
+  ────────────────────────────
+  Inspired by incarnage.com:
+  • Full-viewport autoplay video background
+  • Text anchored to BOTTOM-LEFT, not center
+  • Massive bold-italic headline (all-caps)
+  • Small tagline below headline
+  • Two solid CTA buttons: "SHOP WOMENS" and "SHOP MENS"
+  • Very minimal overlay — let the video breathe
+  • Slide dots bottom-right
+*/
 
 const SLIDES = [
   {
-    id: 1,
-    eyebrow: 'New Collection — SS 2024',
-    headline: ['Wear The', 'New Standard'],
-    sub: "Precision-crafted fashion for those who don't settle.",
-    cta: 'Shop New Arrivals',
-    href: '/search',
+    videoSrc: 'https://videos.pexels.com/video-files/3066741/3066741-uhd_2560_1440_25fps.mp4',
+    headline: 'BE BETTER EVERYDAY',
+    tagline: 'Explore our collection',
   },
   {
-    id: 2,
-    eyebrow: "Men's Edit",
-    headline: ['Dress With', 'Intention'],
-    sub: 'Sharp, versatile pieces built for modern living.',
-    cta: "Shop Men's",
-    href: '/categories/mens-fashion',
+    videoSrc: 'https://videos.pexels.com/video-files/4763824/4763824-uhd_2560_1440_25fps.mp4',
+    headline: 'WEAR THE DIFFERENCE',
+    tagline: "New season arrivals",
   },
   {
-    id: 3,
-    eyebrow: 'Heritage Collection',
-    headline: ['Rooted In', 'Craft'],
-    sub: 'Handwoven silks and ethnic wear from Sri Lankan artisans.',
-    cta: 'Explore Heritage',
-    href: '/categories/traditional-ethnic',
+    videoSrc: 'https://videos.pexels.com/video-files/3249518/3249518-uhd_2560_1440_25fps.mp4',
+    headline: 'CRAFTED FOR YOU',
+    tagline: 'Traditional & contemporary wear',
   },
-];
-
-/*
-  Free-to-use fashion runway videos from Pexels
-  These URLs are valid Pexels video embed links
-*/
-const VIDEO_SRCS = [
-  'https://videos.pexels.com/video-files/3066741/3066741-uhd_2560_1440_25fps.mp4',
-  'https://videos.pexels.com/video-files/4763824/4763824-uhd_2560_1440_25fps.mp4',
-  'https://videos.pexels.com/video-files/3249518/3249518-uhd_2560_1440_25fps.mp4',
 ];
 
 export function HeroSection() {
-  const [current, setCurrent] = useState(0);
-  const [loaded, setLoaded] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [current, setCurrent]   = useState(0);
+  const timerRef                = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    setLoaded(true);
-  }, []);
-
-  // Auto-advance every 8s
   useEffect(() => {
     timerRef.current = setTimeout(() => {
       setCurrent((p) => (p + 1) % SLIDES.length);
-    }, 8000);
+    }, 7000);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [current]);
 
@@ -67,131 +53,102 @@ export function HeroSection() {
   const slide = SLIDES[current];
 
   return (
-    <section className="relative h-screen min-h-[600px] max-h-[900px] bg-black overflow-hidden select-none">
+    <section className="relative w-full overflow-hidden bg-black" style={{ height: '100svh', minHeight: 560 }}>
 
-      {/* VIDEO BACKGROUND */}
-      <div className="absolute inset-0 z-0">
-        {VIDEO_SRCS.map((src, i) => (
-          <video
-            key={src}
-            src={src}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className={`hero-video transition-opacity duration-1000 ${i === current ? 'opacity-100' : 'opacity-0'}`}
-            style={{ zIndex: i === current ? 1 : 0, position: 'absolute', inset: 0 }}
-          />
-        ))}
-        {/* Dark overlay — gradient from bottom + left side darken */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-      </div>
+      {/* ── VIDEOS ── */}
+      {SLIDES.map((s, i) => (
+        <video
+          key={s.videoSrc}
+          src={s.videoSrc}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            i === current ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ zIndex: 1 }}
+        />
+      ))}
 
-      {/* CONTENT */}
-      <div className="relative z-20 h-full flex flex-col justify-end pb-20 md:pb-28">
-        <div className="max-w-7xl mx-auto px-6 md:px-10 lg:px-16 w-full">
-          <div className="max-w-2xl">
+      {/* ── OVERLAY — subtle gradient from bottom only ── */}
+      <div
+        className="absolute inset-0 z-[2]"
+        style={{
+          background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0) 70%)',
+        }}
+      />
+      {/* left edge fade so text is readable */}
+      <div
+        className="absolute inset-0 z-[2]"
+        style={{
+          background: 'linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 55%)',
+        }}
+      />
 
-            {/* Eyebrow */}
-            <p
-              key={`eyebrow-${current}`}
-              className="fade-up fade-up-1 text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-white/60 mb-5"
+      {/* ── CONTENT — bottom left ── */}
+      <div className="absolute inset-0 z-[3] flex flex-col justify-end px-8 md:px-14 lg:px-20 pb-20 md:pb-28">
+        <div key={current} className="raav-fade-in">
+          {/* Tagline */}
+          <p className="text-white/70 text-sm md:text-base font-semibold tracking-[0.2em] uppercase mb-4 raav-line-1">
+            {slide.tagline}
+          </p>
+
+          {/* HEADLINE — massive bold italic, exactly like Carnage */}
+          <h1
+            className="text-white font-black italic leading-none mb-8 raav-line-2"
+            style={{
+              fontSize: 'clamp(3rem, 8vw, 8rem)',
+              letterSpacing: '-0.02em',
+              textTransform: 'uppercase',
+              lineHeight: 0.92,
+            }}
+          >
+            {slide.headline}
+          </h1>
+
+          {/* CTA BUTTONS — side by side, solid fills */}
+          <div className="flex flex-wrap items-center gap-3 raav-line-3">
+            <Link
+              href="/categories/womens-fashion"
+              className="inline-block bg-white text-black text-xs md:text-sm font-black tracking-[0.18em] uppercase px-7 py-4 hover:bg-gray-100 transition-colors duration-200"
             >
-              {slide.eyebrow}
-            </p>
-
-            {/* Headline */}
-            <h1
-              key={`head-${current}`}
-              className="fade-up fade-up-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-none tracking-tight mb-6"
+              SHOP WOMENS
+            </Link>
+            <Link
+              href="/categories/mens-fashion"
+              className="inline-block bg-black text-white text-xs md:text-sm font-black tracking-[0.18em] uppercase px-7 py-4 border border-white/40 hover:bg-white/10 transition-colors duration-200"
             >
-              {slide.headline.map((line, i) => (
-                <span key={i} className="block">{line}</span>
-              ))}
-            </h1>
-
-            {/* Sub */}
-            <p
-              key={`sub-${current}`}
-              className="fade-up fade-up-3 text-base md:text-lg text-white/70 mb-10 max-w-md leading-relaxed"
-            >
-              {slide.sub}
-            </p>
-
-            {/* CTA */}
-            <div
-              key={`cta-${current}`}
-              className="fade-up fade-up-3 flex items-center gap-6"
-            >
-              <Link
-                href={slide.href}
-                className="group inline-flex items-center gap-3 bg-white text-black px-7 py-4 text-sm font-bold tracking-wider uppercase hover:bg-gray-100 transition-colors duration-200"
-              >
-                {slide.cta}
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-              </Link>
-              <Link
-                href="/categories"
-                className="text-sm font-semibold tracking-wider uppercase text-white/70 hover:text-white transition-colors hover-underline"
-              >
-                All Categories
-              </Link>
-            </div>
-          </div>
-
-          {/* Slide indicators */}
-          <div className="flex items-center gap-3 mt-12">
-            {SLIDES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className="relative h-[2px] bg-white/20 overflow-hidden transition-all duration-300"
-                style={{ width: i === current ? '48px' : '24px' }}
-              >
-                {i === current && (
-                  <span
-                    className="absolute inset-y-0 left-0 bg-white"
-                    style={{ width: '100%', animation: 'progress 8s linear forwards' }}
-                  />
-                )}
-              </button>
-            ))}
-            <span className="ml-2 text-xs text-white/40 tabular-nums">
-              {String(current + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
-            </span>
+              SHOP MENS
+            </Link>
           </div>
         </div>
-      </div>
 
-      {/* TICKER — scrolling text bar at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white py-3 overflow-hidden">
-        <div className="flex animate-marquee whitespace-nowrap">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <span key={i} className="flex items-center text-xs font-bold tracking-[0.25em] uppercase text-black mx-0">
-              <span>New Arrivals</span>
-              <span className="mx-8 text-gray-300">—</span>
-              <span>Free Delivery Over Rs. 3,000</span>
-              <span className="mx-8 text-gray-300">—</span>
-              <span>Women's Fashion</span>
-              <span className="mx-8 text-gray-300">—</span>
-              <span>Men's Collection</span>
-              <span className="mx-8 text-gray-300">—</span>
-              <span>Traditional & Ethnic Wear</span>
-              <span className="mx-8 text-gray-300">—</span>
-              <span>30-Day Returns</span>
-              <span className="mx-8 text-gray-300">—</span>
-            </span>
+        {/* ── SLIDE DOTS — bottom right ── */}
+        <div className="absolute bottom-8 right-8 md:right-14 flex items-center gap-3">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Slide ${i + 1}`}
+              className={`transition-all duration-300 rounded-full ${
+                i === current
+                  ? 'w-8 h-2 bg-white'
+                  : 'w-2 h-2 bg-white/40 hover:bg-white/70'
+              }`}
+            />
           ))}
         </div>
       </div>
 
       <style jsx global>{`
-        @keyframes progress {
-          from { transform: scaleX(0); transform-origin: left; }
-          to   { transform: scaleX(1); transform-origin: left; }
+        @keyframes raavFadeUp {
+          from { opacity: 0; transform: translateY(28px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
+        .raav-fade-in .raav-line-1 { animation: raavFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
+        .raav-fade-in .raav-line-2 { animation: raavFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
+        .raav-fade-in .raav-line-3 { animation: raavFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.3s  both; }
       `}</style>
     </section>
   );

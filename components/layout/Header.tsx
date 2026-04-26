@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingBag, Menu, X, Heart, User } from 'lucide-react';
+import { Search, ShoppingBag, User, X, Menu } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useWatchlist } from '@/hooks/useWatchlist';
 import { CartDrawer } from '@/components/cart/CartDrawer';
@@ -12,29 +12,48 @@ import { AuthButton } from '@/components/auth/AuthButton';
 import { getCategories } from '@/lib/products';
 import type { Category } from '@/types';
 
+/*
+  RAAV FASHION – Header
+  ─────────────────────
+  Layout mirrors incarnage.com:
+  • Logo – far left, bold italic condensed wordmark
+  • Nav  – absolutely centered, ALL CAPS spaced links
+  • Icons – far right (search, account, bag)
+  • Entire bar is transparent over hero video; turns white on scroll
+  • All text flips black when scrolled
+*/
+
+const NAV_LINKS = [
+  { label: 'WOMEN',      href: '/categories/womens-fashion' },
+  { label: 'MEN',        href: '/categories/mens-fashion' },
+  { label: 'ACCESSORIES',href: '/categories/accessories' },
+  { label: 'TRADITIONAL',href: '/categories/traditional-ethnic' },
+  { label: 'SALE',       href: '/search' },
+];
+
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled]         = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [scrolled, setScrolled] = useState(false);
-  const { itemCount } = useCart();
-  const { itemCount: watchlistCount } = useWatchlist();
-  const router = useRouter();
-  const searchRef = useRef<HTMLInputElement>(null);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery]   = useState('');
+  const [categories, setCategories]     = useState<Category[]>([]);
+  const { itemCount }                   = useCart();
+  const { itemCount: wlCount }          = useWatchlist();
+  const router                          = useRouter();
+  const searchRef                       = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getCategories().then(setCategories);
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
-    if (isSearchOpen && searchRef.current) searchRef.current.focus();
+    if (isSearchOpen) searchRef.current?.focus();
   }, [isSearchOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -46,190 +65,158 @@ export function Header() {
     }
   };
 
-  // Nav links — primary categories shown inline on desktop
-  const primaryCategories = categories.slice(0, 5);
+  const textColor   = scrolled ? 'text-black'      : 'text-white';
+  const bgClass     = scrolled ? 'bg-white shadow-sm border-b border-gray-100' : 'bg-transparent';
+  const hoverColor  = scrolled ? 'hover:text-gray-500' : 'hover:text-white/70';
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white border-b border-gray-100 shadow-sm' : 'bg-transparent'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div className="flex items-center justify-between h-16 md:h-20">
+      {/* ─── MAIN HEADER ──────────────────────────────────── */}
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${bgClass}`}>
+        <div className="w-full px-6 md:px-10 lg:px-14">
+          <div className="relative flex items-center h-16 md:h-[72px]">
 
-            {/* LEFT — Mobile hamburger + Desktop nav links */}
-            <div className="flex items-center gap-6">
-              <button
-                onClick={() => setIsMenuOpen(true)}
-                className={`md:hidden p-1 transition-colors ${scrolled ? 'text-gray-900' : 'text-white'}`}
-                aria-label="Open menu"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-
-              {/* Desktop links */}
-              <nav className="hidden md:flex items-center gap-7">
-                {primaryCategories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/categories/${cat.slug}`}
-                    className={`text-xs font-bold tracking-[0.12em] uppercase transition-colors hover-underline ${
-                      scrolled ? 'text-gray-900 hover:text-black' : 'text-white/80 hover:text-white'
-                    }`}
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
-                <Link
-                  href="/categories"
-                  className={`text-xs font-bold tracking-[0.12em] uppercase transition-colors hover-underline ${
-                    scrolled ? 'text-gray-500 hover:text-black' : 'text-white/50 hover:text-white'
-                  }`}
-                >
-                  All
-                </Link>
-              </nav>
-            </div>
-
-            {/* CENTER — Logo */}
-            <Link
-              href="/"
-              className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center"
-            >
+            {/* LEFT — LOGO */}
+            <Link href="/" className="flex-shrink-0 z-10">
               <span
-                className={`text-xl md:text-2xl font-black tracking-[0.08em] uppercase transition-colors leading-none ${
-                  scrolled ? 'text-black' : 'text-white'
-                }`}
+                className={`font-black italic tracking-tight text-2xl md:text-3xl transition-colors duration-300 leading-none ${textColor}`}
+                style={{ fontStyle: 'italic', letterSpacing: '-0.02em' }}
               >
-                StyleHub
+                RAAV
               </span>
               <span
-                className={`text-[9px] tracking-[0.3em] uppercase font-medium transition-colors ${
-                  scrolled ? 'text-gray-400' : 'text-white/50'
-                }`}
+                className={`font-black italic tracking-tight text-2xl md:text-3xl transition-colors duration-300 leading-none opacity-50 ${textColor}`}
               >
-                Sri Lanka
+                {' '}FASHION
               </span>
             </Link>
 
-            {/* RIGHT — Icons */}
-            <div className="flex items-center gap-1 md:gap-2">
+            {/* CENTER — DESKTOP NAV (absolutely positioned) */}
+            <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-7 lg:gap-10">
+              {NAV_LINKS.map(({ label, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className={`text-[11px] font-bold tracking-[0.18em] transition-colors duration-200 ${textColor} ${hoverColor}`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* RIGHT — ICONS */}
+            <div className={`ml-auto flex items-center gap-1 z-10 ${textColor}`}>
               {/* Search */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className={`p-2 transition-colors ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white/80 hover:text-white'}`}
+                className={`p-2.5 transition-colors duration-200 ${hoverColor}`}
                 aria-label="Search"
               >
-                <Search className="w-5 h-5" />
+                <Search className="w-[18px] h-[18px]" />
               </button>
-
-              {/* Wishlist */}
-              <div className="hidden sm:block">
-                <WatchlistDrawer>
-                  <button className={`p-2 transition-colors relative ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white/80 hover:text-white'}`}>
-                    <Heart className="w-5 h-5" />
-                    {watchlistCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-black text-white text-[9px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none">
-                        {watchlistCount}
-                      </span>
-                    )}
-                  </button>
-                </WatchlistDrawer>
-              </div>
 
               {/* Account */}
               <div className="hidden sm:block">
                 <AuthButton />
               </div>
 
+              {/* Wishlist */}
+              <div className="hidden sm:block">
+                <WatchlistDrawer>
+                  <button className={`p-2.5 relative transition-colors duration-200 ${hoverColor}`}>
+                    <User className="w-[18px] h-[18px]" />
+                    {wlCount > 0 && (
+                      <span className="absolute top-1 right-1 w-3 h-3 bg-white text-black text-[8px] font-black rounded-full flex items-center justify-center leading-none border border-black">
+                        {wlCount}
+                      </span>
+                    )}
+                  </button>
+                </WatchlistDrawer>
+              </div>
+
               {/* Cart */}
               <CartDrawer>
-                <button className={`p-2 transition-colors relative ${scrolled ? 'text-gray-700 hover:text-black' : 'text-white/80 hover:text-white'}`}>
-                  <ShoppingBag className="w-5 h-5" />
+                <button className={`p-2.5 relative transition-colors duration-200 ${hoverColor}`}>
+                  <ShoppingBag className="w-[18px] h-[18px]" />
                   {itemCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-black text-white text-[9px] rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold leading-none">
+                    <span
+                      className={`absolute top-1 right-1 w-3.5 h-3.5 text-[8px] font-black rounded-full flex items-center justify-center leading-none ${
+                        scrolled ? 'bg-black text-white' : 'bg-white text-black'
+                      }`}
+                    >
                       {itemCount}
                     </span>
                   )}
                 </button>
               </CartDrawer>
+
+              {/* Mobile hamburger */}
+              <button
+                onClick={() => setIsMobileOpen(true)}
+                className={`md:hidden p-2.5 transition-colors duration-200 ${hoverColor}`}
+                aria-label="Menu"
+              >
+                <Menu className="w-[20px] h-[20px]" />
+              </button>
             </div>
 
           </div>
         </div>
       </header>
 
-      {/* FULLSCREEN SEARCH OVERLAY */}
+      {/* ─── FULLSCREEN SEARCH OVERLAY ──────────────────── */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-[60] bg-white flex flex-col">
-          <div className="flex items-center justify-between px-6 md:px-10 h-16 md:h-20 border-b border-gray-100">
-            <span className="text-xs font-bold tracking-[0.2em] uppercase text-gray-400">Search</span>
-            <button
-              onClick={() => setIsSearchOpen(false)}
-              className="p-2 text-gray-900 hover:text-black"
-            >
+        <div className="fixed inset-0 z-[70] bg-black/95 flex flex-col">
+          <div className="flex items-center justify-end px-8 h-16">
+            <button onClick={() => setIsSearchOpen(false)} className="text-white/60 hover:text-white p-2">
               <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="flex-1 flex items-start pt-16 px-6 md:px-10">
-            <form onSubmit={handleSearch} className="w-full max-w-3xl mx-auto">
-              <div className="relative">
-                <input
-                  ref={searchRef}
-                  type="text"
-                  placeholder="Search styles, brands, categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-3xl md:text-5xl font-light text-gray-900 placeholder-gray-300 border-0 border-b-2 border-gray-200 focus:border-black pb-4 pr-12 outline-none bg-transparent transition-colors"
-                />
-                <button type="submit" className="absolute right-0 bottom-4 text-gray-400 hover:text-black transition-colors">
-                  <Search className="w-6 h-6" />
-                </button>
-              </div>
-              <p className="mt-5 text-xs text-gray-400 tracking-widest uppercase">Press Enter to search</p>
+          <div className="flex-1 flex items-center justify-center px-8">
+            <form onSubmit={handleSearch} className="w-full max-w-2xl">
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="SEARCH STYLES, BRANDS..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent border-0 border-b-2 border-white/30 focus:border-white pb-4 text-white text-3xl md:text-5xl font-black italic tracking-tight placeholder-white/20 outline-none transition-colors"
+                style={{ caretColor: 'white' }}
+              />
+              <p className="mt-5 text-white/30 text-xs font-bold tracking-[0.25em] uppercase">
+                Press Enter to Search
+              </p>
             </form>
           </div>
         </div>
       )}
 
-      {/* MOBILE SIDE MENU */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-[60] flex">
-          <div className="bg-black text-white w-80 max-w-full h-full flex flex-col py-8 px-8 overflow-y-auto">
+      {/* ─── MOBILE SIDE MENU ───────────────────────────── */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-[70] flex">
+          <div className="bg-black w-full h-full flex flex-col px-8 py-8">
             <div className="flex items-center justify-between mb-12">
-              <span className="text-sm font-black tracking-[0.15em] uppercase">StyleHub LK</span>
-              <button onClick={() => setIsMenuOpen(false)} className="text-white/60 hover:text-white p-1">
-                <X className="w-5 h-5" />
+              <span className="text-white text-2xl font-black italic tracking-tight">RAAV FASHION</span>
+              <button onClick={() => setIsMobileOpen(false)} className="text-white/50 hover:text-white">
+                <X className="w-6 h-6" />
               </button>
             </div>
-
-            <nav className="flex-1 space-y-1">
-              {categories.map((cat) => (
+            <nav className="flex flex-col gap-2">
+              {NAV_LINKS.map(({ label, href }) => (
                 <Link
-                  key={cat.id}
-                  href={`/categories/${cat.slug}`}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block py-3 text-xl font-bold text-white/80 hover:text-white transition-colors hover-underline"
+                  key={label}
+                  href={href}
+                  onClick={() => setIsMobileOpen(false)}
+                  className="text-4xl font-black italic text-white/80 hover:text-white tracking-tight py-2 transition-colors"
                 >
-                  {cat.name}
+                  {label}
                 </Link>
               ))}
             </nav>
-
-            <div className="border-t border-white/10 pt-6 mt-6 space-y-4">
-              <Link href="/account" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
-                <User className="w-4 h-4" />
-                My Account
-              </Link>
-              <Link href="/help" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition-colors">
-                Help & Support
-              </Link>
+            <div className="mt-auto pt-8 border-t border-white/10">
+              <AuthButton />
             </div>
           </div>
-          {/* Backdrop */}
-          <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
         </div>
       )}
     </>

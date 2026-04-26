@@ -36,9 +36,14 @@ export function Footer() {
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <p className="text-xl font-black tracking-[0.1em] uppercase mb-4">StyleHub LK</p>
+            <p
+              className="text-xl font-black tracking-[0.05em] uppercase mb-4"
+              style={{ fontFamily: 'var(--font-bc), Impact, sans-serif', fontStyle: 'italic' }}
+            >
+              RAAV FASHION
+            </p>
             <p className="text-white/40 text-xs leading-relaxed mb-6">
-              Sri Lanka&apos;s premier fashion marketplace. Connecting style-conscious shoppers with verified sellers.
+              Sri Lanka&apos;s premier fashion destination. Connecting style-conscious shoppers with verified sellers.
             </p>
             <div className="flex gap-3">
               {[
@@ -116,7 +121,7 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-[11px] text-white/30">&copy; {year} StyleHub LK. All rights reserved.</p>
+          <p className="text-[11px] text-white/30">&copy; {year} RAAV FASHION. All rights reserved.</p>
           <div className="flex gap-6">
             {['Privacy', 'Terms', 'Cookies'].map((item) => (
               <Link key={item} href="#" className="text-[11px] text-white/30 hover:text-white/60 transition-colors">

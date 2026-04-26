@@ -78,6 +78,16 @@
 /* Smooth scroll */
 html { scroll-behavior: smooth; }
 
+/* Font helpers */
+.font-display {
+  font-family: var(--font-bc), 'Impact', 'Arial Narrow', sans-serif;
+  font-style: italic;
+  font-weight: 900;
+}
+.font-body {
+  font-family: var(--font-b), system-ui, sans-serif;
+}
+
 /* Line clamp */
 .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
 .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }

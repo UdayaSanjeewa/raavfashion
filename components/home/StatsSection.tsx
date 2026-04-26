@@ -83,7 +83,7 @@ export function StatsSection() {
             Share Your Style<br />With Sri Lanka
           </h2>
           <p className="text-white/50 max-w-md mx-auto text-sm leading-relaxed mb-10">
-            Join hundreds of fashion sellers on StyleHub LK. List your products, reach thousands of buyers, and grow your brand.
+            Join hundreds of fashion sellers on RAAV FASHION. List your products, reach thousands of buyers, and grow your brand.
           </p>
           <Link
             href="/seller/register"
