@@ -88,8 +88,7 @@ export default function NewProduct() {
         return;
       }
 
-      const { data, error } = await supabase.from('products').insert({
-        name: formData.title,
+      const { error } = await supabase.from('products').insert({
         title: formData.title,
         description: formData.description,
         price: parseFloat(formData.price),
@@ -104,11 +103,12 @@ export default function NewProduct() {
         tags: filteredTags,
         is_featured: formData.is_featured,
         is_new: formData.is_new,
+        stock_quantity: 0,
       });
 
       if (error) {
-        console.error('Product insert error:', error);
-        throw error;
+        console.error('Product insert error:', error.message, error.details, error.hint, error.code);
+        throw new Error(error.message);
       }
 
       toast({
