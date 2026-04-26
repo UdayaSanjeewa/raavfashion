@@ -127,13 +127,13 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Category Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-700 to-gray-500 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
               {category.name}
             </h1>
-            <p className="text-xl text-blue-100 mb-6">
+            <p className="text-xl text-gray-300 mb-6">
               {category.description || `Find the best ${category.name.toLowerCase()} in Sri Lanka`}
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">

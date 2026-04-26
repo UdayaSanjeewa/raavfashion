@@ -25,13 +25,13 @@ export function SearchHeader({ query, resultCount, onSearch }: SearchHeaderProps
   };
 
   return (
-    <div className="bg-black text-white">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-700 to-gray-500 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">
             Search Products
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-300">
             Find exactly what you're looking for from thousands of products
           </p>
         </div>
@@ -70,7 +70,7 @@ export function SearchHeader({ query, resultCount, onSearch }: SearchHeaderProps
         {/* Results Summary */}
         {query && (
           <div className="text-center mt-6">
-            <p className="text-gray-400">
+            <p className="text-gray-300">
               Found <span className="font-bold text-white">{resultCount}</span> products
               {query && (
                 <>
