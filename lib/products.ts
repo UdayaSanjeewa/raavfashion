@@ -31,7 +31,8 @@ function mapProduct(p: Record<string, unknown>, category: Category): Product {
     createdAt: p.created_at as string,
     updatedAt: p.updated_at as string,
     isNew: p.is_new as boolean,
-    isFeatured: p.is_featured as boolean
+    isFeatured: p.is_featured as boolean,
+    videoUrl: (p.video_url as string) || undefined
   };
 }
 

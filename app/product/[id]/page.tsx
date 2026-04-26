@@ -11,7 +11,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
   Share2, Star, MapPin, Clock, BadgeCheck,
   ChevronLeft, ChevronRight, X, Maximize2,
-  Ruler, Palette, Tag, Shirt
+  Ruler, Palette, Tag, Shirt, Play
 } from 'lucide-react';
 import type { Product } from '@/types';
 
@@ -22,6 +22,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,8 +47,20 @@ export default function ProductPage() {
     return diffInHours < 24 ? `${diffInHours}h ago` : `${Math.floor(diffInHours / 24)}d ago`;
   };
 
-  const nextImage = () => product && setSelectedImage((prev) => (prev + 1) % product.images.length);
-  const prevImage = () => product && setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length);
+  const nextImage = () => {
+    if (!product) return;
+    if (showVideo) { setShowVideo(false); setSelectedImage(0); return; }
+    const next = selectedImage + 1;
+    if (next >= product.images.length && product.videoUrl) { setShowVideo(true); }
+    else { setSelectedImage(next % product.images.length); }
+  };
+  const prevImage = () => {
+    if (!product) return;
+    if (showVideo) { setShowVideo(false); setSelectedImage(product.images.length - 1); return; }
+    const prev = selectedImage - 1;
+    if (prev < 0 && product.videoUrl) { setShowVideo(true); }
+    else { setSelectedImage((prev + product.images.length) % product.images.length); }
+  };
 
   if (isLoading) {
     return (
@@ -78,16 +91,35 @@ export default function ProductPage() {
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-8 p-6 lg:p-8">
 
-            {/* Images */}
+            {/* Images / Video */}
             <div>
               <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3 bg-gray-100 group">
-                <img
-                  src={product.images[selectedImage]}
-                  alt={product.title}
-                  className="w-full h-full object-cover cursor-zoom-in"
-                  onClick={() => setIsModalOpen(true)}
-                />
-                {product.images.length > 1 && (
+                {showVideo && product.videoUrl ? (
+                  <video
+                    key={product.videoUrl}
+                    src={product.videoUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                  />
+                ) : (
+                  <>
+                    <img
+                      src={product.images[selectedImage]}
+                      alt={product.title}
+                      className="w-full h-full object-cover cursor-zoom-in"
+                      onClick={() => setIsModalOpen(true)}
+                    />
+                    <button onClick={() => setIsModalOpen(true)} className="absolute top-3 right-3 bg-white/90 hover:bg-white rounded-lg p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Maximize2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+
+                {(product.images.length > 1 || product.videoUrl) && (
                   <>
                     <button onClick={prevImage} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
                       <ChevronLeft className="w-4 h-4" />
@@ -97,32 +129,47 @@ export default function ProductPage() {
                     </button>
                   </>
                 )}
-                <button onClick={() => setIsModalOpen(true)} className="absolute top-3 right-3 bg-white/90 hover:bg-white rounded-lg p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Maximize2 className="w-4 h-4" />
-                </button>
-                {product.images.length > 1 && (
-                  <div className="absolute bottom-3 right-3 bg-black/60 text-white px-2 py-0.5 rounded-full text-xs">
-                    {selectedImage + 1}/{product.images.length}
-                  </div>
-                )}
-                {discountPct > 0 && (
+
+                <div className="absolute bottom-3 right-3 bg-black/60 text-white px-2 py-0.5 rounded-full text-xs">
+                  {showVideo ? (
+                    <span className="flex items-center gap-1"><Play className="w-3 h-3" /> Video</span>
+                  ) : (
+                    `${selectedImage + 1}/${product.images.length}${product.videoUrl ? '+' : ''}`
+                  )}
+                </div>
+
+                {discountPct > 0 && !showVideo && (
                   <div className="absolute top-3 left-3 bg-rose-600 text-white text-sm font-bold px-3 py-1 rounded-full">
                     -{discountPct}%
                   </div>
                 )}
               </div>
 
-              {product.images.length > 1 && (
+              {/* Thumbnails — images + optional video thumb */}
+              {(product.images.length > 1 || product.videoUrl) && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {product.images.map((img, i) => (
                     <button
                       key={i}
-                      onClick={() => setSelectedImage(i)}
-                      className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${selectedImage === i ? 'border-rose-500 ring-2 ring-rose-200' : 'border-gray-200'}`}
+                      onClick={() => { setShowVideo(false); setSelectedImage(i); }}
+                      className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${!showVideo && selectedImage === i ? 'border-rose-500 ring-2 ring-rose-200' : 'border-gray-200'}`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
+                  {product.videoUrl && (
+                    <button
+                      onClick={() => setShowVideo(true)}
+                      className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 relative bg-black ${showVideo ? 'border-rose-500 ring-2 ring-rose-200' : 'border-gray-200'}`}
+                    >
+                      <video src={product.videoUrl} className="w-full h-full object-cover opacity-70" muted preload="metadata" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-white/90 rounded-full p-1.5">
+                          <Play className="w-3 h-3 text-black fill-black" />
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
               )}
             </div>

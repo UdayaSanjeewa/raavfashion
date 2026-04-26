@@ -46,6 +46,7 @@ export interface Product {
   updatedAt: string;
   isNew?: boolean;
   isFeatured?: boolean;
+  videoUrl?: string;
 }
 
 export interface CartItem {

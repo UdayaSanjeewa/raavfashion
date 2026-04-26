@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, Video } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -37,6 +37,7 @@ export default function NewSellerProductPage() {
   });
 
   const [images, setImages] = useState<string[]>(['']);
+  const [videoUrl, setVideoUrl] = useState('');
   const [features, setFeatures] = useState<string[]>(['']);
   const [tags, setTags] = useState<string[]>(['']);
 
@@ -126,6 +127,7 @@ export default function NewSellerProductPage() {
         tags: filteredTags,
         is_featured: formData.is_featured,
         is_new: formData.is_new,
+        video_url: videoUrl.trim() || null,
       });
 
       if (error) throw error;
@@ -314,6 +316,40 @@ export default function NewSellerProductPage() {
                 <Plus className="h-4 w-4" />
                 Add Image
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Video className="w-5 h-5 text-gray-500" />
+                Product Video
+                <span className="text-sm font-normal text-gray-400">(optional)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="video_url">Video URL</Label>
+                <Input
+                  id="video_url"
+                  type="url"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="https://example.com/product-video.mp4"
+                />
+                <p className="text-xs text-gray-500">
+                  Paste a direct link to an MP4 video. It will auto-play (muted) on the product page when visitors hover.
+                </p>
+                {videoUrl.trim() && (
+                  <video
+                    src={videoUrl}
+                    className="mt-2 w-full max-w-xs rounded-lg border border-gray-200"
+                    controls
+                    muted
+                    preload="metadata"
+                  />
+                )}
+              </div>
             </CardContent>
           </Card>
 
