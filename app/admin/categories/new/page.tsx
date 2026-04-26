@@ -73,7 +73,7 @@ export default function NewCategory() {
         name: formData.name,
         slug: formData.slug,
         description: formData.description || '',
-        image_url: formData.image || 'https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg',
+        image: formData.image || 'https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg',
       }]);
 
     setIsSaving(false);
