@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Heart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { WatchlistButton } from '@/components/watchlist/WatchlistButton';
@@ -11,18 +12,18 @@ import type { Product } from '@/types';
 /*
   RAAV FASHION – Featured Products
   ──────────────────────────────────
-  Grid of product cards with:
-  • No border/shadow — clean white background
-  • Bold italic product title
-  • Price in black
-  • Hover: quick-add slides up from bottom
-  • Section header in italic condensed bold uppercase (Carnage-style)
+  Kelly Felder-inspired product cards:
+  • Clean white cards, subtle hover shadow
+  • Size pills shown below image
+  • Color dot swatches
+  • "Quick View" on hover
+  • Filter tabs above grid
 */
 
 export function FeaturedProducts() {
-  const [products, setProducts]   = useState<Product[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [filter, setFilter]       = useState<'all' | 'women' | 'men' | 'new'>('all');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [filter, setFilter]     = useState<'all' | 'women' | 'men' | 'new'>('all');
 
   useEffect(() => { loadProducts(); }, []);
 
@@ -33,7 +34,7 @@ export function FeaturedProducts() {
       .select('*')
       .order('is_featured', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(16);
+      .limit(20);
 
     if (!rows || !cats) { setLoading(false); return; }
 
@@ -79,11 +80,11 @@ export function FeaturedProducts() {
   const formatPrice = (n: number) =>
     new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', minimumFractionDigits: 0 }).format(n);
 
-  const FILTERS: { key: typeof filter; label: string }[] = [
-    { key: 'all',   label: 'ALL'    },
-    { key: 'women', label: 'WOMEN'  },
-    { key: 'men',   label: 'MEN'    },
-    { key: 'new',   label: 'NEW IN' },
+  const FILTERS = [
+    { key: 'all'   as const, label: 'All'       },
+    { key: 'women' as const, label: 'Women'     },
+    { key: 'men'   as const, label: 'Men'       },
+    { key: 'new'   as const, label: 'New In'    },
   ];
 
   const visible = products.filter((p) => {
@@ -94,41 +95,35 @@ export function FeaturedProducts() {
     return true;
   });
 
+  // Color name → approximate hex for swatches
+  const colorHex: Record<string, string> = {
+    black: '#111', white: '#fff', red: '#e53', blue: '#3b82f6', navy: '#1e3a5f',
+    green: '#16a34a', pink: '#f472b6', beige: '#e8d5b7', brown: '#92400e',
+    grey: '#9ca3af', gray: '#9ca3af', yellow: '#fbbf24', orange: '#f97316',
+    purple: '#a855f7', cream: '#fef3c7', khaki: '#a3854a',
+  };
+
+  const getColorHex = (name: string) =>
+    colorHex[name.toLowerCase()] || '#ccc';
+
   return (
-    <section className="bg-white pt-20 pb-24">
-      <div className="px-8 md:px-14">
+    <section className="bg-white py-14">
+      <div className="px-5 md:px-10">
 
         {/* ── HEADER ── */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div>
-            <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 mb-2">
-              Handpicked
-            </p>
-            <h2
-              style={{
-                fontFamily: 'var(--font-bc), Impact, sans-serif',
-                fontStyle: 'italic',
-                fontWeight: 900,
-                fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
-                lineHeight: 0.92,
-                letterSpacing: '-0.01em',
-                textTransform: 'uppercase',
-              }}
-            >
-              FEATURED STYLES
-            </h2>
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
+          <h2 className="text-xl font-semibold text-black tracking-tight">Featured Styles</h2>
 
           {/* Filter tabs */}
-          <div className="flex items-center gap-0 border border-black">
+          <div className="flex items-center gap-1">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`px-5 py-2.5 text-[10px] font-black tracking-[0.18em] transition-colors duration-150 ${
+                className={`px-4 py-1.5 text-[11px] font-medium rounded-full transition-all duration-150 ${
                   filter === f.key
                     ? 'bg-black text-white'
-                    : 'bg-white text-black hover:bg-gray-50'
+                    : 'text-gray-500 hover:text-black hover:bg-gray-100'
                 }`}
               >
                 {f.label}
@@ -139,86 +134,122 @@ export function FeaturedProducts() {
 
         {/* ── GRID ── */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] bg-gray-100 animate-pulse" />
+              <div key={i}>
+                <div className="aspect-[3/4] bg-gray-100 animate-pulse mb-3" />
+                <div className="h-3 bg-gray-100 animate-pulse w-2/3 mb-2" />
+                <div className="h-3 bg-gray-100 animate-pulse w-1/3" />
+              </div>
             ))}
           </div>
         ) : visible.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-400 text-sm tracking-widest uppercase">No products yet</p>
+            <p className="text-gray-400 text-sm">No products found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-5 md:gap-y-10">
             {visible.map((product) => {
               const discount = product.originalPrice
                 ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
                 : 0;
+
               return (
-                <div key={product.id} className="group bg-white">
-                  {/* ── IMAGE ── */}
-                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+                <div key={product.id} className="group">
+                  {/* Image */}
+                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-3">
                     {product.images[0] && (
                       <Image
                         src={product.images[0]}
                         alt={product.title}
                         fill
-                        className="object-cover img-zoom"
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                       />
                     )}
 
                     {/* Badges */}
                     <div className="absolute top-3 left-3 flex flex-col gap-1">
                       {product.isNew && (
-                        <span className="bg-black text-white text-[9px] font-black tracking-[0.15em] uppercase px-2.5 py-1">
-                          NEW
+                        <span className="bg-black text-white text-[9px] font-semibold tracking-[0.1em] uppercase px-2 py-0.5">
+                          New
                         </span>
                       )}
                       {discount > 0 && (
-                        <span className="bg-white text-black text-[9px] font-black tracking-[0.12em] uppercase px-2.5 py-1 border border-black">
+                        <span className="bg-red-600 text-white text-[9px] font-semibold tracking-[0.08em] uppercase px-2 py-0.5">
                           -{discount}%
                         </span>
                       )}
                     </div>
 
-                    {/* Wishlist — appears on hover */}
+                    {/* Wishlist */}
                     <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <WatchlistButton product={product} className="bg-white h-8 w-8 rounded-none shadow-none border border-gray-200" />
+                      <WatchlistButton
+                        product={product}
+                        className="bg-white h-8 w-8 rounded-full shadow-sm border border-gray-100"
+                      />
                     </div>
 
-                    {/* Quick add — slides up on hover */}
+                    {/* Quick add */}
                     <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
                       <AddToCartButton
                         product={product}
                         size="sm"
-                        className="w-full rounded-none h-11 text-[10px] tracking-[0.2em] font-black uppercase bg-black text-white hover:bg-gray-900 border-0"
+                        className="w-full rounded-none h-10 text-[10px] tracking-[0.15em] font-semibold uppercase bg-black text-white hover:bg-gray-900 border-0"
                       />
                     </div>
                   </div>
 
-                  {/* ── INFO ── */}
-                  <Link href={`/product/${product.id}`} className="block pt-3 pb-1 px-0.5">
+                  {/* Info */}
+                  <Link href={`/product/${product.id}`} className="block">
                     {product.brand && (
-                      <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-0.5">
+                      <p className="text-[10px] font-medium tracking-widest uppercase text-gray-400 mb-0.5">
                         {product.brand}
                       </p>
                     )}
-                    <h3
-                      className="text-sm font-semibold text-gray-900 leading-snug line-clamp-1 group-hover:text-black"
-                    >
+                    <h3 className="text-sm text-gray-900 font-medium leading-snug line-clamp-1 group-hover:text-black transition-colors">
                       {product.title}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-sm font-black text-black">{formatPrice(product.price)}</span>
+
+                    {/* Price */}
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm font-semibold text-black">{formatPrice(product.price)}</span>
                       {product.originalPrice && (
                         <span className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
                       )}
                     </div>
-                    {/* Size preview */}
+
+                    {/* Color swatches */}
+                    {product.colors && product.colors.length > 0 && (
+                      <div className="flex items-center gap-1 mt-2">
+                        {product.colors.slice(0, 5).map((color) => (
+                          <span
+                            key={color}
+                            title={color}
+                            className="inline-block w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0"
+                            style={{ backgroundColor: getColorHex(color) }}
+                          />
+                        ))}
+                        {product.colors.length > 5 && (
+                          <span className="text-[10px] text-gray-400">+{product.colors.length - 5}</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Size pills */}
                     {product.sizes && product.sizes.length > 0 && (
-                      <p className="text-[10px] text-gray-400 mt-1 tracking-wide">
-                        {product.sizes.slice(0, 5).join('  ·  ')}
-                      </p>
+                      <div className="flex items-center flex-wrap gap-1 mt-2">
+                        {product.sizes.slice(0, 5).map((size) => (
+                          <span
+                            key={size}
+                            className="text-[9px] font-medium text-gray-500 border border-gray-200 px-1.5 py-0.5 leading-none"
+                          >
+                            {size}
+                          </span>
+                        ))}
+                        {product.sizes.length > 5 && (
+                          <span className="text-[9px] text-gray-400">+{product.sizes.length - 5}</span>
+                        )}
+                      </div>
                     )}
                   </Link>
                 </div>
@@ -229,12 +260,12 @@ export function FeaturedProducts() {
 
         {/* ── VIEW ALL ── */}
         {!loading && (
-          <div className="mt-14 text-center">
+          <div className="mt-12 text-center">
             <Link
               href="/search"
-              className="inline-block border-2 border-black text-black text-xs font-black tracking-[0.25em] uppercase px-12 py-4 hover:bg-black hover:text-white transition-colors duration-200"
+              className="inline-block border border-black text-black text-[11px] font-semibold tracking-[0.2em] uppercase px-10 py-3.5 hover:bg-black hover:text-white transition-colors duration-200"
             >
-              VIEW ALL PRODUCTS
+              View All Products
             </Link>
           </div>
         )}

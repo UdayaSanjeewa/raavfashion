@@ -9,9 +9,11 @@ import type { Category } from '@/types';
 /*
   RAAV FASHION – Category Grid
   ─────────────────────────────
-  Two large featured categories side-by-side (full bleed image, white text overlay)
-  then a horizontal scrollable strip of smaller category cards below.
-  Style: dark, athletic, bold italic labels — matching Carnage/RAAV look.
+  Kelly Felder-inspired editorial layout:
+  • Full-width two-column split (Women / Men) with tall portrait images
+  • 4-column mini grid below for sub-categories
+  • Clean sans-serif labels, not italic headlines
+  • Hover: subtle image scale + underline label
 */
 
 export function CategoryGrid() {
@@ -22,129 +24,98 @@ export function CategoryGrid() {
     getCategories().then((d) => { setCategories(d); setLoading(false); });
   }, []);
 
-  const hero    = categories.slice(0, 2);   // Women, Men — large blocks
-  const rest    = categories.slice(2);      // the rest as smaller strip
+  const hero = categories.slice(0, 2);
+  const sub  = categories.slice(2, 6);
+
+  if (loading) {
+    return (
+      <section className="bg-white py-10">
+        <div className="grid grid-cols-2 gap-3 px-5 md:px-10">
+          {[0, 1].map((i) => (
+            <div key={i} className="aspect-[3/4] bg-gray-100 animate-pulse" />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-white">
 
-      {/* ── SECTION LABEL ── */}
-      <div className="px-8 md:px-14 pt-16 pb-8 flex items-end justify-between">
-        <div>
-          <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 mb-2">
-            Collections
-          </p>
-          <h2
-            className="font-display text-5xl md:text-6xl lg:text-7xl text-black leading-none"
-            style={{ fontFamily: 'var(--font-bc), Impact, sans-serif', fontStyle: 'italic', fontWeight: 900 }}
-          >
-            SHOP BY CATEGORY
-          </h2>
-        </div>
+      {/* ── SECTION HEADER ── */}
+      <div className="px-5 md:px-10 pt-14 pb-8 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-black tracking-tight">Shop by Category</h2>
         <Link
           href="/categories"
-          className="hidden md:block text-[11px] font-bold tracking-[0.2em] uppercase text-black border-b-2 border-black pb-0.5 hover:text-gray-600 hover:border-gray-600 transition-colors"
+          className="text-[11px] font-medium text-gray-500 hover:text-black tracking-widest uppercase transition-colors border-b border-gray-300 hover:border-black pb-0.5"
         >
-          VIEW ALL
+          View All
         </Link>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-2 gap-1 px-1 pb-1">
-          {[0, 1].map((i) => <div key={i} className="aspect-[2/3] bg-gray-100 animate-pulse" />)}
-        </div>
-      ) : (
-        <>
-          {/* ── HERO PAIR — large side-by-side ── */}
-          {hero.length > 0 && (
-            <div className="grid grid-cols-2 gap-[3px] px-0">
-              {hero.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/categories/${cat.slug}`}
-                  className="group relative overflow-hidden bg-gray-900"
-                  style={{ aspectRatio: '2/3' }}
-                >
-                  <Image
-                    src={cat.image}
-                    alt={cat.name}
-                    fill
-                    className="object-cover img-zoom opacity-90 group-hover:opacity-80 transition-opacity duration-500"
-                  />
-                  {/* Bottom gradient */}
-                  <div
-                    className="absolute inset-0"
-                    style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 55%)' }}
-                  />
-                  {/* Label */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                    <h3
-                      className="text-white leading-none mb-3"
-                      style={{
-                        fontFamily: 'var(--font-bc), Impact, sans-serif',
-                        fontStyle: 'italic',
-                        fontWeight: 900,
-                        fontSize: 'clamp(2rem, 4vw, 3.5rem)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '-0.01em',
-                      }}
-                    >
-                      {cat.name}
-                    </h3>
-                    <span className="inline-block bg-white text-black text-[10px] font-black tracking-[0.18em] uppercase px-5 py-2.5 group-hover:bg-gray-100 transition-colors duration-200">
-                      SHOP NOW
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+      {/* ── HERO PAIR ── */}
+      {hero.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 px-5 md:px-10">
+          {hero.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/categories/${cat.slug}`}
+              className="group relative overflow-hidden bg-gray-100"
+              style={{ aspectRatio: '3/4' }}
+            >
+              {cat.image && (
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                />
+              )}
+              {/* bottom gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-          {/* ── REST — horizontal scroll strip ── */}
-          {rest.length > 0 && (
-            <div className="overflow-x-auto scrollbar-hide px-0 pt-[3px]">
-              <div className="flex gap-[3px]" style={{ minWidth: 'max-content' }}>
-                {rest.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/categories/${cat.slug}`}
-                    className="group relative overflow-hidden bg-gray-900 flex-shrink-0"
-                    style={{ width: 260, aspectRatio: '3/4' }}
-                  >
-                    <Image
-                      src={cat.image}
-                      alt={cat.name}
-                      fill
-                      className="object-cover img-zoom opacity-90 group-hover:opacity-75 transition-opacity duration-500"
-                    />
-                    <div
-                      className="absolute inset-0"
-                      style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%)' }}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3
-                        className="text-white text-xl leading-tight"
-                        style={{
-                          fontFamily: 'var(--font-bc), Impact, sans-serif',
-                          fontStyle: 'italic',
-                          fontWeight: 900,
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        {cat.name}
-                      </h3>
-                      {cat.productCount > 0 && (
-                        <p className="text-white/50 text-[10px] font-semibold tracking-widest uppercase mt-1">
-                          {cat.productCount}+ items
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                ))}
+              {/* Label */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                <h3 className="text-white text-2xl md:text-3xl font-semibold tracking-tight mb-3">
+                  {cat.name}
+                </h3>
+                <span className="inline-block text-white text-[11px] font-semibold tracking-[0.18em] uppercase border-b border-white pb-0.5 group-hover:border-white/60 transition-colors">
+                  Shop Now
+                </span>
               </div>
-            </div>
-          )}
-        </>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* ── SUB CATEGORIES ── */}
+      {sub.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-5 md:px-10 pt-2 pb-10">
+          {sub.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/categories/${cat.slug}`}
+              className="group relative overflow-hidden bg-gray-100"
+              style={{ aspectRatio: '1/1' }}
+            >
+              {cat.image && (
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <h3 className="text-white text-sm font-semibold tracking-tight">{cat.name}</h3>
+                {cat.productCount > 0 && (
+                  <p className="text-white/50 text-[10px] mt-0.5 tracking-widest uppercase">{cat.productCount}+ items</p>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
       )}
     </section>
   );

@@ -1,93 +1,90 @@
 'use client';
 
 import Link from 'next/link';
-import { Truck, RefreshCw, ShieldCheck, Award } from 'lucide-react';
+import { Truck, RefreshCw, ShieldCheck, CreditCard } from 'lucide-react';
 
 const PERKS = [
-  {
-    icon: Truck,
-    title: 'Free Island-Wide Delivery',
-    desc: 'On all orders over Rs. 3,000',
-  },
-  {
-    icon: RefreshCw,
-    title: '30-Day Easy Returns',
-    desc: 'No questions asked',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Verified Sellers Only',
-    desc: 'Every product is authenticated',
-  },
-  {
-    icon: Award,
-    title: 'Premium Quality',
-    desc: 'Curated for those who care',
-  },
+  { icon: Truck,        title: 'Free Island-Wide Delivery', desc: 'On orders over Rs. 3,000' },
+  { icon: RefreshCw,    title: '30-Day Easy Returns',       desc: 'Hassle-free returns' },
+  { icon: ShieldCheck,  title: 'Verified Sellers',          desc: 'Every product authenticated' },
+  { icon: CreditCard,   title: 'Secure Payments',           desc: 'Multiple payment options' },
 ];
 
 const STATS = [
   { value: '15,000+', label: 'Styles Available' },
-  { value: '8,000+', label: 'Happy Customers' },
-  { value: '200+', label: 'Verified Sellers' },
-  { value: '4.9★', label: 'Average Rating' },
+  { value: '8,000+',  label: 'Happy Customers'  },
+  { value: '200+',    label: 'Verified Sellers'  },
+  { value: '4.9★',    label: 'Average Rating'    },
 ];
 
 export function StatsSection() {
   return (
     <>
-      {/* PERKS BAR */}
-      <section className="bg-black py-16">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
+      {/* ── PERKS STRIP ── */}
+      <section className="border-t border-b border-gray-100 bg-white py-8">
+        <div className="max-w-6xl mx-auto px-5 md:px-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {PERKS.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex flex-col items-center text-center group">
-                <div className="mb-4 p-3 border border-white/10 group-hover:border-white/30 transition-colors">
-                  <Icon className="h-5 w-5 text-white" />
+              <div key={title} className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center bg-gray-50 rounded-full">
+                  <Icon className="w-4 h-4 text-black" />
                 </div>
-                <h3 className="text-xs font-bold tracking-[0.12em] uppercase text-white mb-1.5">{title}</h3>
-                <p className="text-xs text-white/40">{desc}</p>
+                <div>
+                  <p className="text-xs font-semibold text-black leading-tight mb-0.5">{title}</p>
+                  <p className="text-[11px] text-gray-400">{desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* STATS BANNER */}
-      <section className="bg-white py-20 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-gray-100">
+      {/* ── STATS ── */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-4xl mx-auto px-5 md:px-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {STATS.map(({ value, label }) => (
-              <div key={label} className="text-center px-4 first:pl-0 last:pr-0">
-                <p className="text-4xl md:text-5xl font-black text-black mb-2 tracking-tight">{value}</p>
-                <p className="text-xs font-medium tracking-[0.15em] uppercase text-gray-400">{label}</p>
+              <div key={label}>
+                <p className="text-3xl md:text-4xl font-bold text-black mb-1.5">{value}</p>
+                <p className="text-[11px] font-medium text-gray-400 tracking-widest uppercase">{label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* EDITORIAL BANNER — full-width dark callout */}
-      <section className="relative bg-gray-950 overflow-hidden">
+      {/* ── SELLER BANNER ── */}
+      <section className="relative bg-black overflow-hidden py-24">
         <div
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-15"
           style={{
-            backgroundImage: 'url(https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1200)',
+            backgroundImage: 'url(https://images.pexels.com/photos/1884584/pexels-photo-1884584.jpeg?auto=compress&cs=tinysrgb&w=1200)',
             backgroundSize: 'cover',
-            backgroundPosition: 'center 30%',
+            backgroundPosition: 'center',
           }}
         />
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 py-28 text-center">
-          <p className="text-xs font-bold tracking-[0.3em] uppercase text-white/40 mb-6">Become a Seller</p>
-          <h2 className="text-4xl md:text-6xl font-black text-white leading-none tracking-tight mb-8 max-w-3xl mx-auto">
-            Share Your Style<br />With Sri Lanka
+        <div className="relative z-10 max-w-2xl mx-auto px-5 md:px-10 text-center">
+          <p className="text-[10px] font-semibold tracking-[0.35em] uppercase text-white/40 mb-5">
+            Become a Seller
+          </p>
+          <h2
+            className="text-white mb-6 leading-tight"
+            style={{
+              fontFamily: 'var(--font-bc), Impact, sans-serif',
+              fontStyle: 'italic',
+              fontWeight: 800,
+              fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Share Your Style With Sri Lanka
           </h2>
-          <p className="text-white/50 max-w-md mx-auto text-sm leading-relaxed mb-10">
-            Join hundreds of fashion sellers on RAAV FASHION. List your products, reach thousands of buyers, and grow your brand.
+          <p className="text-white/45 max-w-sm mx-auto text-sm leading-relaxed mb-10">
+            Join hundreds of fashion sellers on RAAV FASHION. Reach thousands of buyers and grow your brand.
           </p>
           <Link
             href="/seller/register"
-            className="inline-flex items-center gap-3 border border-white text-white px-10 py-4 text-xs font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-black transition-colors duration-200"
+            className="inline-block border border-white text-white text-[11px] font-semibold tracking-[0.2em] uppercase px-10 py-4 hover:bg-white hover:text-black transition-colors duration-200"
           >
             Start Selling Today
           </Link>

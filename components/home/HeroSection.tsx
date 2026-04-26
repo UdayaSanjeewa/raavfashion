@@ -2,154 +2,157 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-
-/*
-  RAAV FASHION – Hero Section
-  ────────────────────────────
-  Inspired by incarnage.com:
-  • Full-viewport autoplay video background
-  • Text anchored to BOTTOM-LEFT, not center
-  • Massive bold-italic headline (all-caps)
-  • Small tagline below headline
-  • Two solid CTA buttons: "SHOP WOMENS" and "SHOP MENS"
-  • Very minimal overlay — let the video breathe
-  • Slide dots bottom-right
-*/
+import Image from 'next/image';
 
 const SLIDES = [
   {
-    videoSrc: 'https://videos.pexels.com/video-files/3066741/3066741-uhd_2560_1440_25fps.mp4',
-    headline: 'BE BETTER EVERYDAY',
-    tagline: 'Explore our collection',
+    image: 'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    eyebrow: 'New Arrivals',
+    headline: 'Effortless\nElegance',
+    sub: 'Discover the new season collection',
+    cta: { label: 'Shop Women', href: '/categories/womens-fashion' },
+    ctaSecondary: { label: 'Shop Men', href: '/categories/mens-fashion' },
+    align: 'left' as const,
   },
   {
-    videoSrc: 'https://videos.pexels.com/video-files/4763824/4763824-uhd_2560_1440_25fps.mp4',
-    headline: 'WEAR THE DIFFERENCE',
-    tagline: "New season arrivals",
+    image: 'https://images.pexels.com/photos/842811/pexels-photo-842811.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    eyebrow: "Men's Collection",
+    headline: 'Dressed for\nEvery Moment',
+    sub: 'Premium menswear, curated for you',
+    cta: { label: 'Shop Collection', href: '/categories/mens-fashion' },
+    ctaSecondary: null,
+    align: 'right' as const,
   },
   {
-    videoSrc: 'https://videos.pexels.com/video-files/3249518/3249518-uhd_2560_1440_25fps.mp4',
-    headline: 'CRAFTED FOR YOU',
-    tagline: 'Traditional & contemporary wear',
+    image: 'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    eyebrow: 'Traditional Wear',
+    headline: 'Heritage\nMeets Modern',
+    sub: 'Authentic ethnic wear for every occasion',
+    cta: { label: 'Explore Now', href: '/categories/traditional-ethnic' },
+    ctaSecondary: null,
+    align: 'center' as const,
   },
 ];
 
 export function HeroSection() {
-  const [current, setCurrent]   = useState(0);
-  const timerRef                = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [current, setCurrent] = useState(0);
+  const [fading, setFading]   = useState(false);
+  const timerRef              = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    timerRef.current = setTimeout(() => {
-      setCurrent((p) => (p + 1) % SLIDES.length);
-    }, 7000);
+    timerRef.current = setTimeout(() => advance(), 6500);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [current]);
 
+  const advance = () => {
+    setFading(true);
+    setTimeout(() => {
+      setCurrent((p) => (p + 1) % SLIDES.length);
+      setFading(false);
+    }, 500);
+  };
+
   const goTo = (i: number) => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    setCurrent(i);
+    if (i === current) return;
+    setFading(true);
+    setTimeout(() => { setCurrent(i); setFading(false); }, 500);
   };
 
   const slide = SLIDES[current];
 
-  return (
-    <section className="relative w-full overflow-hidden bg-black" style={{ height: '100svh', minHeight: 560 }}>
+  const contentAlign =
+    slide.align === 'left'
+      ? 'items-start text-left pl-10 md:pl-20'
+      : slide.align === 'right'
+      ? 'items-end text-right pr-10 md:pr-20'
+      : 'items-center text-center px-10';
 
-      {/* ── VIDEOS ── */}
+  const overlayStyle =
+    slide.align === 'right'
+      ? 'linear-gradient(to left, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.05) 60%, transparent 100%)'
+      : slide.align === 'center'
+      ? 'rgba(0,0,0,0.38)'
+      : 'linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.05) 60%, transparent 100%)';
+
+  return (
+    <section
+      className="relative w-full overflow-hidden bg-gray-200"
+      style={{ height: '88vh', minHeight: 500, maxHeight: 860 }}
+    >
+      {/* Images */}
       {SLIDES.map((s, i) => (
-        <video
-          key={s.videoSrc}
-          src={s.videoSrc}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            i === current ? 'opacity-100' : 'opacity-0'
-          }`}
+        <Image
+          key={s.image}
+          src={s.image}
+          alt=""
+          fill
+          priority={i === 0}
+          className={`object-cover transition-opacity duration-700 ${i === current && !fading ? 'opacity-100' : 'opacity-0'}`}
           style={{ zIndex: 1 }}
         />
       ))}
 
-      {/* ── OVERLAY — subtle gradient from bottom only ── */}
-      <div
-        className="absolute inset-0 z-[2]"
-        style={{
-          background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0) 70%)',
-        }}
-      />
-      {/* left edge fade so text is readable */}
-      <div
-        className="absolute inset-0 z-[2]"
-        style={{
-          background: 'linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 55%)',
-        }}
-      />
+      {/* Overlay */}
+      <div className="absolute inset-0 z-[2]" style={{ background: overlayStyle }} />
 
-      {/* ── CONTENT — bottom left ── */}
-      <div className="absolute inset-0 z-[3] flex flex-col justify-end px-8 md:px-14 lg:px-20 pb-20 md:pb-28">
-        <div key={current} className="raav-fade-in">
-          {/* Tagline */}
-          <p className="text-white/70 text-sm md:text-base font-semibold tracking-[0.2em] uppercase mb-4 raav-line-1">
-            {slide.tagline}
+      {/* Content */}
+      <div className={`absolute inset-0 z-[3] flex flex-col justify-end pb-20 md:pb-28 ${contentAlign}`}>
+        <div
+          className={`max-w-lg transition-all duration-600 ${fading ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'}`}
+          style={{ transitionDuration: '600ms' }}
+        >
+          <p className="text-white/65 text-[11px] font-semibold tracking-[0.35em] uppercase mb-4">
+            {slide.eyebrow}
           </p>
-
-          {/* HEADLINE — massive bold italic, exactly like Carnage */}
           <h1
-            className="text-white font-black italic leading-none mb-8 raav-line-2"
+            className="text-white leading-tight mb-5 whitespace-pre-line"
             style={{
-              fontSize: 'clamp(3rem, 8vw, 8rem)',
+              fontFamily: 'var(--font-bc), Impact, sans-serif',
+              fontStyle: 'italic',
+              fontWeight: 800,
+              fontSize: 'clamp(3rem, 7vw, 6.5rem)',
+              lineHeight: 1.0,
               letterSpacing: '-0.02em',
-              textTransform: 'uppercase',
-              lineHeight: 0.92,
             }}
           >
             {slide.headline}
           </h1>
-
-          {/* CTA BUTTONS — side by side, solid fills */}
-          <div className="flex flex-wrap items-center gap-3 raav-line-3">
+          <p className="text-white/65 text-sm md:text-base mb-8 font-light">
+            {slide.sub}
+          </p>
+          <div className={`flex gap-3 flex-wrap ${slide.align === 'center' ? 'justify-center' : slide.align === 'right' ? 'justify-end' : ''}`}>
             <Link
-              href="/categories/womens-fashion"
-              className="inline-block bg-white text-black text-xs md:text-sm font-black tracking-[0.18em] uppercase px-7 py-4 hover:bg-gray-100 transition-colors duration-200"
+              href={slide.cta.href}
+              className="inline-block bg-white text-black text-[11px] font-semibold tracking-[0.18em] uppercase px-8 py-3.5 hover:bg-gray-50 transition-colors duration-200"
             >
-              SHOP WOMENS
+              {slide.cta.label}
             </Link>
-            <Link
-              href="/categories/mens-fashion"
-              className="inline-block bg-black text-white text-xs md:text-sm font-black tracking-[0.18em] uppercase px-7 py-4 border border-white/40 hover:bg-white/10 transition-colors duration-200"
-            >
-              SHOP MENS
-            </Link>
+            {slide.ctaSecondary && (
+              <Link
+                href={slide.ctaSecondary.href}
+                className="inline-block border border-white/80 text-white text-[11px] font-semibold tracking-[0.18em] uppercase px-8 py-3.5 hover:bg-white/10 transition-colors duration-200"
+              >
+                {slide.ctaSecondary.label}
+              </Link>
+            )}
           </div>
-        </div>
-
-        {/* ── SLIDE DOTS — bottom right ── */}
-        <div className="absolute bottom-8 right-8 md:right-14 flex items-center gap-3">
-          {SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              aria-label={`Slide ${i + 1}`}
-              className={`transition-all duration-300 rounded-full ${
-                i === current
-                  ? 'w-8 h-2 bg-white'
-                  : 'w-2 h-2 bg-white/40 hover:bg-white/70'
-              }`}
-            />
-          ))}
         </div>
       </div>
 
-      <style jsx global>{`
-        @keyframes raavFadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .raav-fade-in .raav-line-1 { animation: raavFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
-        .raav-fade-in .raav-line-2 { animation: raavFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
-        .raav-fade-in .raav-line-3 { animation: raavFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.3s  both; }
-      `}</style>
+      {/* Dot indicators */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[4] flex items-center gap-2">
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Slide ${i + 1}`}
+            className={`transition-all duration-300 rounded-full ${
+              i === current ? 'w-6 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
+            }`}
+          />
+        ))}
+      </div>
     </section>
   );
 }
