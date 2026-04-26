@@ -3,16 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  Package,
-  Users,
-  FolderOpen,
-  BarChart3,
-  Settings,
-  Store,
-} from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Users, FolderOpen, ChartBar as BarChart3, Settings, Store } from 'lucide-react';
 
 const menuItems = [
   {
@@ -57,8 +48,8 @@ export function Sidebar() {
           <Link href="/admin" className="flex items-center space-x-2">
             <Store className="h-8 w-8 text-blue-400" />
             <div>
-              <h1 className="text-lg font-bold">E-GadgetLK Admin</h1>
-              <p className="text-xs text-slate-400">Ecommerce Portal</p>
+              <h1 className="text-lg font-bold">Raav Fashion</h1>
+              <p className="text-xs text-slate-400">Admin Portal</p>
             </div>
           </Link>
         </div>

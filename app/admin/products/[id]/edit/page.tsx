@@ -128,7 +128,6 @@ export default function EditProduct() {
       const { error } = await supabase
         .from('products')
         .update({
-          name: formData.title,
           title: formData.title,
           description: formData.description,
           price: parseFloat(formData.price),
