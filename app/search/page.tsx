@@ -74,6 +74,13 @@ function SearchPageContent() {
           avatar: product.seller_avatar,
           rating: parseFloat(product.seller_rating) || 0
         },
+        sizes: product.sizes || [],
+        colors: product.colors || [],
+        gender: product.gender || 'unisex',
+        material: product.material || '',
+        brand: product.brand || '',
+        style: product.style || '',
+        stockQuantity: product.stock_quantity || 0,
         features: product.features || [],
         tags: product.tags || [],
         createdAt: product.created_at,

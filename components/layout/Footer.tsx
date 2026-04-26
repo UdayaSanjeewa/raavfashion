@@ -1,52 +1,52 @@
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, Shirt } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   const footerSections = [
     {
-      title: 'Categories',
+      title: 'Shop by Category',
       links: [
-        { name: 'Vehicles', href: '/categories/vehicles' },
-        { name: 'Electronics', href: '/categories/electronics' },
-        { name: 'Property', href: '/categories/property' },
-        { name: 'Fashion', href: '/categories/fashion' },
-        { name: 'Home & Garden', href: '/categories/home-garden' },
-        { name: 'Services', href: '/categories/services' }
+        { name: "Women's Fashion", href: '/categories/womens-fashion' },
+        { name: "Men's Fashion", href: '/categories/mens-fashion' },
+        { name: 'Kids & Baby', href: '/categories/kids-baby' },
+        { name: 'Accessories', href: '/categories/accessories' },
+        { name: 'Shoes & Footwear', href: '/categories/shoes-footwear' },
+        { name: 'Traditional & Ethnic', href: '/categories/traditional-ethnic' }
       ]
     },
     {
-      title: 'Support',
+      title: 'Customer Support',
       links: [
         { name: 'Help Center', href: '/help' },
-        { name: 'Safety Tips', href: '/safety' },
-        { name: 'Contact Us', href: '/contact' },
-        { name: 'Report Ad', href: '/report' },
-        { name: 'Terms & Conditions', href: '/terms' },
+        { name: 'Track Your Order', href: '/account/orders' },
+        { name: 'Returns & Refunds', href: '/help' },
+        { name: 'Size Guide', href: '/help' },
+        { name: 'Contact Us', href: '/help' },
         { name: 'Privacy Policy', href: '/privacy' }
       ]
     },
     {
-      title: 'For Business',
+      title: 'For Sellers',
       links: [
-        { name: 'Advertise with Us', href: '/advertise' },
-        { name: 'Business Account', href: '/business' },
-        { name: 'Dealer Solutions', href: '/dealers' },
-        { name: 'API Access', href: '/api' },
-        { name: 'Bulk Upload', href: '/bulk-upload' },
-        { name: 'Analytics', href: '/analytics' }
+        { name: 'Become a Seller', href: '/seller/register' },
+        { name: 'Seller Dashboard', href: '/seller/dashboard' },
+        { name: 'Seller Guidelines', href: '/help' },
+        { name: 'Upload Products', href: '/seller/products/new' },
+        { name: 'Seller Support', href: '/help' },
+        { name: 'Commission Rates', href: '/help' }
       ]
     },
     {
-      title: 'About E-GadgetLK',
+      title: 'About StyleHub LK',
       links: [
         { name: 'About Us', href: '/about' },
         { name: 'Careers', href: '/careers' },
         { name: 'Press', href: '/press' },
         { name: 'Blog', href: '/blog' },
-        { name: 'Success Stories', href: '/stories' },
-        { name: 'Community', href: '/community' }
+        { name: 'Sustainability', href: '/sustainability' },
+        { name: 'Terms & Conditions', href: '/terms' }
       ]
     }
   ];
@@ -54,18 +54,18 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-orange-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-gradient-to-r from-rose-600 to-pink-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="text-center">
-            <h3 className="text-2xl font-bold mb-2">Stay Updated!</h3>
-            <p className="text-blue-100 mb-6">Get the latest deals and new listings delivered to your inbox</p>
+            <h3 className="text-2xl font-bold mb-2">Stay in Style</h3>
+            <p className="text-rose-100 mb-6 text-sm">Get the latest fashion drops, exclusive deals, and style inspiration delivered to your inbox</p>
             <div className="max-w-md mx-auto flex gap-2">
               <input
                 type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+                placeholder="Enter your email address"
+                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white text-sm"
               />
-              <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+              <button className="bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors text-sm whitespace-nowrap">
                 Subscribe
               </button>
             </div>
@@ -78,59 +78,53 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Company Info */}
           <div className="lg:col-span-1">
-            <div className="flex items-center mb-4">
-              <div className="bg-gradient-to-r from-blue-600 to-orange-500 text-white px-3 py-2 rounded-lg font-bold text-xl">
-                E-GadgetLK
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-rose-600 rounded-lg flex items-center justify-center">
+                <Shirt className="w-4 h-4 text-white" />
               </div>
+              <span className="text-xl font-extrabold tracking-tight">StyleHub LK</span>
             </div>
             <p className="text-gray-400 mb-6 text-sm leading-relaxed">
-              Sri Lanka's largest online marketplace. Buy, sell, or find anything from cars to electronics, property to fashion.
+              Sri Lanka's premier online fashion marketplace. Discover the latest trends from verified sellers across the island.
             </p>
-            
-            {/* Contact Info */}
+
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-blue-400" />
+                <Phone className="h-4 w-4 text-rose-400 flex-shrink-0" />
                 <span className="text-gray-400">+94 11 234 5678</span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-blue-400" />
-                <span className="text-gray-400">info@e-gadgetlk.com</span>
+                <Mail className="h-4 w-4 text-rose-400 flex-shrink-0" />
+                <span className="text-gray-400">hello@stylehublk.com</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-400" />
+                <MapPin className="h-4 w-4 text-rose-400 flex-shrink-0" />
                 <span className="text-gray-400">Colombo, Sri Lanka</span>
               </div>
             </div>
 
-            {/* Social Media */}
-            <div className="flex space-x-3 mt-6">
-              <Link href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-blue-600 transition-colors">
-                <Facebook className="h-4 w-4" />
-              </Link>
-              <Link href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-blue-600 transition-colors">
-                <Twitter className="h-4 w-4" />
-              </Link>
-              <Link href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-pink-600 transition-colors">
-                <Instagram className="h-4 w-4" />
-              </Link>
-              <Link href="#" className="bg-gray-800 p-2 rounded-lg hover:bg-red-600 transition-colors">
-                <Youtube className="h-4 w-4" />
-              </Link>
+            <div className="flex space-x-2 mt-6">
+              {[
+                { Icon: Facebook, hover: 'hover:bg-blue-600' },
+                { Icon: Twitter, hover: 'hover:bg-sky-500' },
+                { Icon: Instagram, hover: 'hover:bg-pink-600' },
+                { Icon: Youtube, hover: 'hover:bg-red-600' }
+              ].map(({ Icon, hover }, i) => (
+                <Link key={i} href="#" className={`bg-gray-800 p-2 rounded-lg ${hover} transition-colors`}>
+                  <Icon className="h-4 w-4" />
+                </Link>
+              ))}
             </div>
           </div>
 
           {/* Footer Sections */}
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h4 className="font-semibold text-white mb-4">{section.title}</h4>
-              <ul className="space-y-2">
+              <h4 className="font-semibold text-white mb-4 text-sm">{section.title}</h4>
+              <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link.name}>
-                    <Link 
-                      href={link.href} 
-                      className="text-gray-400 hover:text-white transition-colors text-sm"
-                    >
+                    <Link href={link.href} className="text-gray-400 hover:text-rose-400 transition-colors text-sm">
                       {link.name}
                     </Link>
                   </li>
@@ -143,24 +137,17 @@ export function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {currentYear} E-GadgetLK. All rights reserved.
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-gray-500 text-sm">
+              &copy; {currentYear} StyleHub LK. All rights reserved.
             </div>
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
-                Terms of Service
-              </Link>
-              <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/cookies" className="text-gray-400 hover:text-white transition-colors">
-                Cookie Policy
-              </Link>
-              <Link href="/accessibility" className="text-gray-400 hover:text-white transition-colors">
-                Accessibility
-              </Link>
+            <div className="flex flex-wrap justify-center gap-5 text-sm">
+              {['Terms of Service', 'Privacy Policy', 'Cookie Policy', 'Accessibility'].map((item) => (
+                <Link key={item} href="#" className="text-gray-500 hover:text-white transition-colors">
+                  {item}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

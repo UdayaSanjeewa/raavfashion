@@ -8,7 +8,11 @@ import { WatchlistButton } from '@/components/watchlist/WatchlistButton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Share2, Star, MapPin, Clock, BadgeCheck, ChevronLeft, ChevronRight, X, Maximize2 } from 'lucide-react';
+import {
+  Share2, Star, MapPin, Clock, BadgeCheck,
+  ChevronLeft, ChevronRight, X, Maximize2,
+  Ruler, Palette, Tag, Shirt
+} from 'lucide-react';
 import type { Product } from '@/types';
 
 export default function ProductPage() {
@@ -18,6 +22,8 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -27,46 +33,26 @@ export default function ProductPage() {
   const loadProduct = async () => {
     const data = await getProductById(id);
     setProduct(data);
+    if (data?.sizes?.length) setSelectedSize(data.sizes[0]);
+    if (data?.colors?.length) setSelectedColor(data.colors[0]);
     setIsLoading(false);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', minimumFractionDigits: 0 }).format(price);
 
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d ago`;
-    }
+    const diffInHours = Math.floor((Date.now() - new Date(dateString).getTime()) / (1000 * 60 * 60));
+    return diffInHours < 24 ? `${diffInHours}h ago` : `${Math.floor(diffInHours / 24)}d ago`;
   };
 
-  const nextImage = () => {
-    if (product) {
-      setSelectedImage((prev) => (prev + 1) % product.images.length);
-    }
-  };
-
-  const previousImage = () => {
-    if (product) {
-      setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length);
-    }
-  };
+  const nextImage = () => product && setSelectedImage((prev) => (prev + 1) % product.images.length);
+  const prevImage = () => product && setSelectedImage((prev) => (prev - 1 + product.images.length) % product.images.length);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500" />
       </div>
     );
   }
@@ -76,179 +62,235 @@ export default function ProductPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-          <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+          <p className="text-gray-500">The product you&apos;re looking for doesn&apos;t exist.</p>
         </div>
       </div>
     );
   }
 
+  const discountPct = product.originalPrice
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-8">
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-8 p-6 lg:p-8">
+
+            {/* Images */}
             <div>
-              <div className="relative aspect-square rounded-lg overflow-hidden mb-4 bg-gray-100 group">
+              <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3 bg-gray-100 group">
                 <img
                   src={product.images[selectedImage]}
                   alt={product.title}
-                  className="w-full h-full object-cover cursor-pointer"
+                  className="w-full h-full object-cover cursor-zoom-in"
                   onClick={() => setIsModalOpen(true)}
                 />
-
                 {product.images.length > 1 && (
                   <>
-                    <button
-                      onClick={previousImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
+                    <button onClick={prevImage} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronRight className="w-5 h-5" />
+                    <button onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </>
                 )}
-
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-lg p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                >
+                <button onClick={() => setIsModalOpen(true)} className="absolute top-3 right-3 bg-white/90 hover:bg-white rounded-lg p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
                   <Maximize2 className="w-4 h-4" />
                 </button>
-
-                <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-                  {selectedImage + 1} / {product.images.length}
-                </div>
+                {product.images.length > 1 && (
+                  <div className="absolute bottom-3 right-3 bg-black/60 text-white px-2 py-0.5 rounded-full text-xs">
+                    {selectedImage + 1}/{product.images.length}
+                  </div>
+                )}
+                {discountPct > 0 && (
+                  <div className="absolute top-3 left-3 bg-rose-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                    -{discountPct}%
+                  </div>
+                )}
               </div>
 
               {product.images.length > 1 && (
-                <div className="grid grid-cols-5 gap-2">
-                  {product.images.map((image, index) => (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {product.images.map((img, i) => (
                     <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
-                        selectedImage === index ? 'border-blue-600 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      key={i}
+                      onClick={() => setSelectedImage(i)}
+                      className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${selectedImage === i ? 'border-rose-500 ring-2 ring-rose-200' : 'border-gray-200'}`}
                     >
-                      <img
-                        src={image}
-                        alt={`${product.title} ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            <div>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-blue-100 text-blue-800 border-0">
-                      {product.category.name}
-                    </Badge>
-                    <Badge variant="outline">
-                      {product.condition}
-                    </Badge>
-                    {product.isFeatured && (
-                      <Badge className="bg-yellow-100 text-yellow-800 border-0">
-                        Featured
-                      </Badge>
-                    )}
-                    {product.isNew && (
-                      <Badge className="bg-green-100 text-green-800 border-0">
-                        New
-                      </Badge>
-                    )}
-                  </div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {product.title}
-                  </h1>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      <span>{product.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{formatTimeAgo(product.createdAt)}</span>
-                    </div>
-                  </div>
+            {/* Product Info */}
+            <div className="mt-6 lg:mt-0">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="bg-rose-50 text-rose-700 border-rose-200 text-xs">
+                    {product.category.name}
+                  </Badge>
+                  {product.brand && (
+                    <Badge variant="outline" className="text-xs">{product.brand}</Badge>
+                  )}
+                  {product.isNew && (
+                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">New Arrival</Badge>
+                  )}
+                  {product.isFeatured && (
+                    <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">Featured</Badge>
+                  )}
                 </div>
-
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 ml-2 flex-shrink-0">
                   <WatchlistButton product={product} />
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" className="h-9 w-9">
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-4 mb-6">
-                <div className="flex items-baseline gap-3 mb-2">
-                  <span className="text-4xl font-bold text-blue-600">
-                    {formatPrice(product.price)}
-                  </span>
-                  {product.originalPrice && (
-                    <>
-                      <span className="text-xl text-gray-500 line-through">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                      <Badge variant="destructive">
-                        -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                      </Badge>
-                    </>
-                  )}
-                </div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight">
+                {product.title}
+              </h1>
+
+              {/* Price */}
+              <div className="flex items-baseline gap-3 mb-5">
+                <span className="text-3xl font-bold text-rose-600">{formatPrice(product.price)}</span>
+                {product.originalPrice && (
+                  <span className="text-lg text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+                )}
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-lg font-semibold">
-                    {product.seller.name[0]}
+              {/* Fashion Attributes */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Ruler className="h-4 w-4 text-gray-500" />
+                    <span className="font-semibold text-gray-900 text-sm">Size</span>
+                    <span className="text-sm text-gray-500">— {selectedSize}</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-900">
-                        {product.seller.name}
-                      </span>
-                      <BadgeCheck className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600">
-                        {product.seller.rating} rating
-                      </span>
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {product.sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-all ${
+                          selectedSize === size
+                            ? 'border-rose-500 bg-rose-500 text-white'
+                            : 'border-gray-200 text-gray-700 hover:border-rose-300 hover:text-rose-600'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
                   </div>
-                  <Button variant="outline">Contact Seller</Button>
                 </div>
+              )}
+
+              {product.colors && product.colors.length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Palette className="h-4 w-4 text-gray-500" />
+                    <span className="font-semibold text-gray-900 text-sm">Color</span>
+                    <span className="text-sm text-gray-500">— {selectedColor}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {product.colors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-all ${
+                          selectedColor === color
+                            ? 'border-rose-500 bg-rose-50 text-rose-700'
+                            : 'border-gray-200 text-gray-700 hover:border-rose-300'
+                        }`}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Product Details */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-5 grid grid-cols-2 gap-3 text-sm">
+                {product.material && (
+                  <div>
+                    <span className="text-gray-500">Material</span>
+                    <p className="font-medium text-gray-900">{product.material}</p>
+                  </div>
+                )}
+                {product.style && (
+                  <div>
+                    <span className="text-gray-500">Style</span>
+                    <p className="font-medium text-gray-900">{product.style}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-gray-500">Gender</span>
+                  <p className="font-medium text-gray-900 capitalize">{product.gender}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Condition</span>
+                  <p className="font-medium text-gray-900 capitalize">{product.condition}</p>
+                </div>
+                {product.location && (
+                  <div className="col-span-2 flex items-center gap-1 text-gray-500">
+                    <MapPin className="h-3.5 w-3.5" />
+                    <span>{product.location}</span>
+                    <span className="mx-1">·</span>
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>{formatTimeAgo(product.createdAt)}</span>
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-4 mb-6">
-                <AddToCartButton product={product} className="w-full" size="lg" />
+              {/* Seller */}
+              <div className="bg-rose-50 rounded-xl p-4 mb-5 flex items-center gap-3 border border-rose-100">
+                <div className="h-10 w-10 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                  {product.seller.name[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-gray-900 text-sm truncate">{product.seller.name}</span>
+                    <BadgeCheck className="h-4 w-4 text-rose-500 flex-shrink-0" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3.5 w-3.5 text-yellow-400 fill-current" />
+                    <span className="text-xs text-gray-600">{product.seller.rating} rating</span>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="flex-shrink-0 border-rose-200 text-rose-700 hover:bg-rose-100">
+                  Contact
+                </Button>
               </div>
 
-              <div className="border-t border-gray-200 pt-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Description</h2>
-                <p className="text-gray-700 whitespace-pre-line">
-                  {product.description}
-                </p>
+              {/* Add to Cart */}
+              <AddToCartButton
+                product={{ ...product, selectedSize, selectedColor } as Product}
+                className="w-full"
+                size="lg"
+              />
+
+              {/* Description */}
+              <div className="border-t border-gray-100 pt-6 mt-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-3">Description</h2>
+                <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{product.description}</p>
               </div>
 
               {product.features.length > 0 && (
-                <div className="border-t border-gray-200 pt-6 mt-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Features</h2>
+                <div className="border-t border-gray-100 pt-5 mt-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shirt className="h-4 w-4 text-rose-500" />
+                    <h2 className="text-lg font-bold text-gray-900">Features</h2>
+                  </div>
                   <ul className="space-y-2">
-                    {product.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-blue-600 mt-1">✓</span>
+                    {product.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <span className="text-rose-500 font-bold mt-0.5">✓</span>
                         <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}
@@ -257,12 +299,15 @@ export default function ProductPage() {
               )}
 
               {product.tags.length > 0 && (
-                <div className="border-t border-gray-200 pt-6 mt-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Tags</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline">
-                        {tag}
+                <div className="border-t border-gray-100 pt-5 mt-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-gray-400" />
+                    <h2 className="text-sm font-semibold text-gray-700">Tags</h2>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {product.tags.map((tag, i) => (
+                      <Badge key={i} variant="outline" className="text-xs text-gray-500 border-gray-200">
+                        #{tag}
                       </Badge>
                     ))}
                   </div>
@@ -273,64 +318,36 @@ export default function ProductPage() {
         </div>
       </div>
 
+      {/* Image Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-5xl w-full p-0">
+        <DialogContent className="max-w-4xl w-full p-0">
           <div className="relative bg-black">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full p-2 backdrop-blur-sm transition-colors"
+              className="absolute top-3 right-3 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
-
-            <div className="relative aspect-square max-h-[80vh]">
-              <img
-                src={product.images[selectedImage]}
-                alt={product.title}
-                className="w-full h-full object-contain"
-              />
-
+            <div className="relative aspect-[3/4] max-h-[80vh]">
+              <img src={product.images[selectedImage]} alt={product.title} className="w-full h-full object-contain" />
               {product.images.length > 1 && (
                 <>
-                  <button
-                    onClick={previousImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-3 transition-colors"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
+                  <button onClick={prevImage} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2.5 transition-colors">
+                    <ChevronLeft className="w-5 h-5" />
                   </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-3 transition-colors"
-                  >
-                    <ChevronRight className="w-6 h-6" />
+                  <button onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-full p-2.5 transition-colors">
+                    <ChevronRight className="w-5 h-5" />
                   </button>
                 </>
               )}
-
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm">
-                {selectedImage + 1} / {product.images.length}
-              </div>
             </div>
-
             {product.images.length > 1 && (
-              <div className="bg-black/80 backdrop-blur-sm p-4">
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {product.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage === index ? 'border-blue-500 ring-2 ring-blue-300' : 'border-white/30 hover:border-white/50'
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
+              <div className="bg-black/80 p-3 flex gap-2 overflow-x-auto">
+                {product.images.map((img, i) => (
+                  <button key={i} onClick={() => setSelectedImage(i)} className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === i ? 'border-rose-400' : 'border-white/20 hover:border-white/50'}`}>
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
           </div>

@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: 'user' | 'admin';
+  role: 'customer' | 'seller' | 'admin';
 }
 
 export interface Category {
@@ -32,6 +32,14 @@ export interface Product {
     avatar?: string;
     rating: number;
   };
+  // Fashion-specific
+  sizes: string[];
+  colors: string[];
+  gender: 'men' | 'women' | 'kids' | 'unisex';
+  material?: string;
+  brand?: string;
+  style?: string;
+  stockQuantity?: number;
   features: string[];
   tags: string[];
   createdAt: string;
@@ -44,7 +52,8 @@ export interface CartItem {
   id: string;
   product: Product;
   quantity: number;
-  selectedVariant?: string;
+  selectedSize?: string;
+  selectedColor?: string;
 }
 
 export interface WatchlistItem {
@@ -58,7 +67,7 @@ export interface Order {
   userId: string;
   items: CartItem[];
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   shippingAddress: Address;
   paymentMethod: string;
   createdAt: string;
@@ -67,10 +76,14 @@ export interface Order {
 
 export interface Address {
   id?: string;
+  label?: string;
+  fullName?: string;
+  phone?: string;
   street: string;
   city: string;
   state: string;
-  zipCode: string;
+  zipCode?: string;
+  postalCode?: string;
   country: string;
   isDefault?: boolean;
 }
@@ -78,7 +91,10 @@ export interface Address {
 export interface FilterOptions {
   category?: string;
   priceRange?: [number, number];
+  sizes?: string[];
+  colors?: string[];
+  gender?: string;
+  brand?: string;
   condition?: string[];
-  location?: string;
   sortBy?: 'newest' | 'price-low' | 'price-high' | 'popular';
 }

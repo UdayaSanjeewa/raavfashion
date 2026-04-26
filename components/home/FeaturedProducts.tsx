@@ -95,22 +95,22 @@ export function FeaturedProducts() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-100 to-pink-100 rounded-full mb-4">
-            <Star className="h-4 w-4 text-orange-600 fill-current" />
-            <span className="text-sm font-semibold text-orange-600">Featured Products</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-full mb-4 border border-rose-100">
+            <Star className="h-4 w-4 text-rose-600 fill-current" />
+            <span className="text-sm font-semibold text-rose-600">Featured Styles</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
             Trending Right Now
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Handpicked premium products loved by our community
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            Handpicked fashion pieces loved by our community across Sri Lanka
           </p>
         </div>
 
         {/* Products Grid */}
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500"></div>
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-12">
@@ -121,7 +121,7 @@ export function FeaturedProducts() {
           {products.map((product, index) => (
             <div
               key={product.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-200 hover:border-blue-400 transform hover:-translate-y-2"
+              className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-rose-300 transform hover:-translate-y-2"
               style={{
                 animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both`
               }}
@@ -176,11 +176,11 @@ export function FeaturedProducts() {
               <div className="p-5">
                 {/* Title & Price */}
                 <div className="mb-3">
-                  <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors mb-2">
+                  <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-rose-600 transition-colors mb-2">
                     {product.title}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-blue-600">
+                    <span className="text-2xl font-bold text-rose-600">
                       {formatPrice(product.price)}
                     </span>
                     {product.originalPrice && (
@@ -204,7 +204,7 @@ export function FeaturedProducts() {
                 {/* Seller Info */}
                 <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                    <div className="h-8 w-8 bg-gradient-to-r from-rose-400 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                       {product.seller.name[0]}
                     </div>
                     <div className="flex flex-col">
@@ -212,7 +212,7 @@ export function FeaturedProducts() {
                         <span className="font-medium text-sm text-gray-900">
                           {product.seller.name}
                         </span>
-                        <BadgeCheck className="h-3 w-3 text-blue-500" />
+                        <BadgeCheck className="h-3 w-3 text-rose-500" />
                       </div>
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3 text-yellow-400 fill-current" />
@@ -241,7 +241,7 @@ export function FeaturedProducts() {
                       <Badge
                         key={index}
                         variant="outline"
-                        className="text-xs border-blue-200 text-blue-700"
+                        className="text-xs border-rose-200 text-rose-700"
                       >
                         {feature}
                       </Badge>
@@ -276,7 +276,7 @@ export function FeaturedProducts() {
           <Link href="/search">
             <Button
               size="lg"
-              className="px-10 py-6 bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 hover:from-orange-600 hover:via-pink-600 hover:to-red-600 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              className="px-10 py-6 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
             >
               View All Products
             </Button>

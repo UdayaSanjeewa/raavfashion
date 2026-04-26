@@ -27,15 +27,15 @@ export function CategoryGrid() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full mb-4">
-            <Sparkles className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-semibold text-blue-600">Shop by Category</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-full mb-4 border border-rose-100">
+            <Sparkles className="h-4 w-4 text-rose-600" />
+            <span className="text-sm font-semibold text-rose-600">Shop by Category</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
             Explore Our Collections
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover premium products across diverse categories, all curated for your needs
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            Discover the latest fashion trends across our curated categories
           </p>
         </div>
 
@@ -70,17 +70,17 @@ export function CategoryGrid() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-600/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-rose-600/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                   <div className="absolute bottom-0 left-0 right-0 p-5 text-white transform transition-all duration-300">
-                    <h3 className="font-bold text-xl mb-2 group-hover:text-cyan-300 transition-colors duration-300">
+                    <h3 className="font-bold text-xl mb-2 group-hover:text-rose-200 transition-colors duration-300">
                       {category.name}
                     </h3>
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-gray-200">
                         {category.productCount.toLocaleString()} items
                       </p>
-                      <div className="flex items-center gap-1 text-sm font-semibold group-hover:text-cyan-300 transition-colors duration-300">
+                      <div className="flex items-center gap-1 text-sm font-semibold group-hover:text-rose-200 transition-colors duration-300">
                         <span>Shop</span>
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform duration-300" />
                       </div>
@@ -100,7 +100,7 @@ export function CategoryGrid() {
                   </div>
                 )}
 
-                <div className="absolute inset-0 ring-2 ring-transparent group-hover:ring-blue-400 rounded-2xl transition-all duration-300"></div>
+                <div className="absolute inset-0 ring-2 ring-transparent group-hover:ring-rose-400 rounded-2xl transition-all duration-300"></div>
               </Link>
             ))}
           </div>
@@ -109,7 +109,7 @@ export function CategoryGrid() {
         <div className="text-center mt-16">
           <Link
             href="/categories"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 group"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group"
           >
             View All Categories
             <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
-import { ShoppingCart, Plus, Minus, Check } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddToCartButtonProps {
@@ -134,10 +134,10 @@ export function AddToCartButton({
         size={size}
         onClick={handleAddToCart}
         disabled={isAdding}
-        className="flex items-center gap-2"
+        className={`flex items-center gap-2 ${variant === 'default' ? 'bg-rose-600 hover:bg-rose-700 text-white border-0' : ''}`}
       >
-        <ShoppingCart className="h-4 w-4" />
-        {isAdding ? 'Adding...' : 'Add to Cart'}
+        <ShoppingBag className="h-4 w-4" />
+        {isAdding ? 'Adding...' : 'Add to Bag'}
       </Button>
     </div>
   );
