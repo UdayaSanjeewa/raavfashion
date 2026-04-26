@@ -25,13 +25,13 @@ export function SearchHeader({ query, resultCount, onSearch }: SearchHeaderProps
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+    <div className="bg-black text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight">
             Search Products
           </h1>
-          <p className="text-blue-100">
+          <p className="text-gray-400">
             Find exactly what you're looking for from thousands of products
           </p>
         </div>
@@ -45,7 +45,7 @@ export function SearchHeader({ query, resultCount, onSearch }: SearchHeaderProps
               placeholder="Search for products, brands, categories..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-12 pr-12 py-4 text-lg bg-white text-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-white focus:ring-opacity-50"
+              className="w-full pl-12 pr-12 py-4 text-lg bg-white text-gray-900 border-0 rounded-xl focus:ring-2 focus:ring-gray-300"
             />
             {searchInput && (
               <Button
@@ -61,7 +61,7 @@ export function SearchHeader({ query, resultCount, onSearch }: SearchHeaderProps
           </div>
           <Button
             type="submit"
-            className="w-full mt-4 bg-white text-blue-600 hover:bg-gray-100 font-semibold py-3 rounded-xl"
+            className="w-full mt-4 bg-white text-black hover:bg-gray-100 font-semibold py-3 rounded-xl"
           >
             Search Products
           </Button>
@@ -70,7 +70,7 @@ export function SearchHeader({ query, resultCount, onSearch }: SearchHeaderProps
         {/* Results Summary */}
         {query && (
           <div className="text-center mt-6">
-            <p className="text-blue-100">
+            <p className="text-gray-400">
               Found <span className="font-bold text-white">{resultCount}</span> products
               {query && (
                 <>

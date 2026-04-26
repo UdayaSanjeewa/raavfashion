@@ -52,7 +52,7 @@ export function AdminHeader({ userName = 'Admin', userEmail = 'admin@sibn.com' }
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-3">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-blue-600 text-white">
+                <AvatarFallback className="bg-black text-white">
                   {userName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
