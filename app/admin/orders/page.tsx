@@ -22,19 +22,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  ArrowLeft,
-  Package,
-  Eye,
-  RefreshCw,
-  Search,
-  CheckCircle,
-  XCircle,
-  Clock,
-  TruckIcon,
-  Home,
-  DollarSign
-} from 'lucide-react';
+import { ArrowLeft, Package, Eye, RefreshCw, Search, CircleCheck as CheckCircle, Clock, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -546,113 +534,209 @@ export default function AdminOrderManagement() {
       </main>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-          </DialogHeader>
-
+        <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0">
           {selectedOrder && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold mb-3">Customer Information</h3>
-                  <div className="space-y-2 text-sm">
+            <>
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b px-6 py-4 z-10">
+                <DialogHeader>
+                  <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-gray-500">Name</span>
-                      <p className="font-medium">{selectedOrder.customer_name || 'N/A'}</p>
+                      <DialogTitle className="text-lg font-bold text-gray-900">
+                        Order #{selectedOrder.order_number || selectedOrder.id.substring(0, 8).toUpperCase()}
+                      </DialogTitle>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Placed on {format(new Date(selectedOrder.created_at), 'PPP · p')}
+                      </p>
                     </div>
-                    <div>
-                      <span className="text-gray-500">Email</span>
-                      <p className="font-medium">{selectedOrder.customer_email || 'N/A'}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {getStatusBadge(selectedOrder.status)}
                     </div>
-                    {selectedOrder.customer_mobile && (
+                  </div>
+                </DialogHeader>
+              </div>
+
+              <div className="px-6 py-5 space-y-6">
+
+                {/* Status management row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Order Status</p>
+                    <Select
+                      value={selectedOrder.status}
+                      onValueChange={(value) => {
+                        handleStatusChange(selectedOrder, value);
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map(s => (
+                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment Status</p>
+                    <Select
+                      value={selectedOrder.payment_status}
+                      onValueChange={(value) => {
+                        handlePaymentStatusChange(selectedOrder, value);
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentStatusOptions.map(s => (
+                          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Info grid */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Customer */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Customer</h4>
+                    <div className="space-y-2.5">
                       <div>
-                        <span className="text-gray-500">Mobile</span>
-                        <p className="font-medium">{selectedOrder.customer_mobile}</p>
+                        <p className="text-[11px] text-gray-400">Name</p>
+                        <p className="text-sm font-semibold text-gray-900">{selectedOrder.customer_name || '—'}</p>
                       </div>
+                      <div>
+                        <p className="text-[11px] text-gray-400">Email</p>
+                        <p className="text-sm font-medium text-gray-700 break-all">{selectedOrder.customer_email || '—'}</p>
+                      </div>
+                      {selectedOrder.customer_mobile && (
+                        <div>
+                          <p className="text-[11px] text-gray-400">Mobile</p>
+                          <p className="text-sm font-medium text-gray-700">{selectedOrder.customer_mobile}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Payment */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Payment</h4>
+                    <div className="space-y-2.5">
+                      <div>
+                        <p className="text-[11px] text-gray-400">Method</p>
+                        <div className="mt-0.5">{getPaymentMethodBadge(selectedOrder.payment_method)}</div>
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-gray-400">Status</p>
+                        <div className="mt-0.5">{getPaymentStatusBadge(selectedOrder.payment_status)}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Shipping Address */}
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Shipping Address</h4>
+                  <div className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 text-sm text-gray-700 space-y-0.5">
+                    {selectedOrder.shipping_address
+                      ? <p>{selectedOrder.shipping_address}</p>
+                      : <p className="text-gray-400 italic">No address provided</p>
+                    }
+                    {selectedOrder.shipping_city && (
+                      <p className="text-gray-500">
+                        {selectedOrder.shipping_city}
+                        {selectedOrder.shipping_postal_code ? `, ${selectedOrder.shipping_postal_code}` : ''}
+                      </p>
                     )}
                   </div>
                 </div>
 
+                {/* Notes */}
+                {selectedOrder.notes && (
+                  <div>
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Order Notes</h4>
+                    <div className="bg-amber-50 border border-amber-100 rounded-lg px-4 py-3 text-sm text-amber-800">
+                      {selectedOrder.notes}
+                    </div>
+                  </div>
+                )}
+
+                {/* Order Items */}
                 <div>
-                  <h3 className="font-semibold mb-3">Order Status</h3>
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                    Order Items ({selectedOrder.items?.length || 0})
+                  </h4>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Order:</span>
-                      {getStatusBadge(selectedOrder.status)}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Payment Status:</span>
-                      {getPaymentStatusBadge(selectedOrder.payment_status)}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Payment Method:</span>
-                      {getPaymentMethodBadge(selectedOrder.payment_method)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Shipping Address</h3>
-                <div className="bg-gray-50 p-4 rounded-lg text-sm space-y-1">
-                  <p>{selectedOrder.shipping_address || 'No address provided'}</p>
-                  {selectedOrder.shipping_city && (
-                    <p>{selectedOrder.shipping_city}{selectedOrder.shipping_postal_code ? `, ${selectedOrder.shipping_postal_code}` : ''}</p>
-                  )}
-                </div>
-              </div>
-
-              {selectedOrder.notes && (
-                <div>
-                  <h3 className="font-semibold mb-3">Order Notes</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
-                    {selectedOrder.notes}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <h3 className="font-semibold mb-3">Order Items</h3>
-                <div className="space-y-3">
-                  {selectedOrder.items?.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                      {item.product?.images?.[0] && (
-                        <img
-                          src={item.product.images[0]}
-                          alt={item.product.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium">{item.product?.title || 'Product Deleted'}</p>
-                        <p className="text-sm text-gray-600">
-                          Quantity: {item.quantity} × Rs. {Number(item.price).toLocaleString()}
+                    {selectedOrder.items?.length === 0 && (
+                      <p className="text-sm text-gray-400 italic">No items found.</p>
+                    )}
+                    {selectedOrder.items?.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-lg p-3">
+                        {item.product?.images?.[0] ? (
+                          <img
+                            src={item.product.images[0]}
+                            alt={item.product?.title}
+                            className="w-14 h-14 object-cover rounded-md border border-gray-200 flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0">
+                            <Package className="w-5 h-5 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">
+                            {item.product?.title || <span className="text-gray-400 italic">Product deleted</span>}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Qty {item.quantity} &times; Rs.&nbsp;{Number(item.price).toLocaleString()}
+                          </p>
+                          {/* Size / Color chips if present */}
+                          {((item as any).selected_size || (item as any).selected_color) && (
+                            <div className="flex gap-1.5 mt-1.5">
+                              {(item as any).selected_size && (
+                                <span className="inline-block text-[10px] font-semibold bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded">
+                                  Size: {(item as any).selected_size}
+                                </span>
+                              )}
+                              {(item as any).selected_color && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded">
+                                  Color: {(item as any).selected_color}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-sm font-bold text-gray-800 flex-shrink-0">
+                          Rs.&nbsp;{(Number(item.price) * item.quantity).toLocaleString()}
                         </p>
                       </div>
-                      <p className="font-semibold">
-                        Rs. {(Number(item.price) * item.quantity).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div>
-                  <p className="text-sm text-gray-600">Order Date</p>
-                  <p className="font-medium">
-                    {format(new Date(selectedOrder.created_at), 'PPP')}
-                  </p>
+                {/* Footer totals */}
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Subtotal</span>
+                    <span>Rs.&nbsp;{Number(selectedOrder.total_amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Shipping</span>
+                    <span className="text-green-600 font-medium">Free</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="font-bold text-gray-900">Total</span>
+                    <span className="text-xl font-bold text-gray-900">
+                      Rs.&nbsp;{Number(selectedOrder.total_amount).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">Total Amount</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    Rs. {Number(selectedOrder.total_amount).toLocaleString()}
-                  </p>
-                </div>
+
               </div>
-            </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
