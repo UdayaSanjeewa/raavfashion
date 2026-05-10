@@ -27,12 +27,40 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
+const COLOR_HEX_MAP: Record<string, string> = {
+  'Black':    '#000000',
+  'White':    '#FFFFFF',
+  'Grey':     '#9CA3AF',
+  'Navy':     '#1E3A5F',
+  'Blue':     '#3B82F6',
+  'Sky Blue': '#7DD3FC',
+  'Red':      '#EF4444',
+  'Maroon':   '#7F1D1D',
+  'Pink':     '#F472B6',
+  'Peach':    '#FBBF8A',
+  'Orange':   '#F97316',
+  'Yellow':   '#FACC15',
+  'Green':    '#22C55E',
+  'Olive':    '#6B7280',
+  'Khaki':    '#C3B091',
+  'Beige':    '#F5F0E8',
+  'Brown':    '#92400E',
+  'Camel':    '#C19A6B',
+  'Cream':    '#FFFDD0',
+  'Gold':     '#D4AF37',
+  'Silver':   '#C0C0C0',
+};
+
 interface OrderItem {
   id: string;
   product_id: string;
   quantity: number;
   price: number;
   status: string;
+  selected_size?: string | null;
+  selected_color?: string | null;
+  product_title?: string;
+  product_image?: string;
 }
 
 interface ProductDetails {
@@ -673,47 +701,54 @@ export default function AdminOrderManagement() {
                     {selectedOrder.items?.length === 0 && (
                       <p className="text-sm text-gray-400 italic">No items found.</p>
                     )}
-                    {selectedOrder.items?.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-lg p-3">
-                        {item.product?.images?.[0] ? (
-                          <img
-                            src={item.product.images[0]}
-                            alt={item.product?.title}
-                            className="w-14 h-14 object-cover rounded-md border border-gray-200 flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-14 h-14 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0">
-                            <Package className="w-5 h-5 text-gray-400" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 truncate">
-                            {item.product?.title || <span className="text-gray-400 italic">Product deleted</span>}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            Qty {item.quantity} &times; Rs.&nbsp;{Number(item.price).toLocaleString()}
-                          </p>
-                          {/* Size / Color chips if present */}
-                          {((item as any).selected_size || (item as any).selected_color) && (
-                            <div className="flex gap-1.5 mt-1.5">
-                              {(item as any).selected_size && (
-                                <span className="inline-block text-[10px] font-semibold bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded">
-                                  Size: {(item as any).selected_size}
-                                </span>
-                              )}
-                              {(item as any).selected_color && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded">
-                                  Color: {(item as any).selected_color}
-                                </span>
-                              )}
+                    {selectedOrder.items?.map((item) => {
+                      const imgSrc = item.product?.images?.[0] || item.product_image || null;
+                      const title = item.product?.title || item.product_title || null;
+                      return (
+                        <div key={item.id} className="flex items-start gap-3 bg-gray-50 border border-gray-100 rounded-lg p-3">
+                          {imgSrc ? (
+                            <img
+                              src={imgSrc}
+                              alt={title || 'Product'}
+                              className="w-16 h-16 object-cover rounded-md border border-gray-200 flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <Package className="w-5 h-5 text-gray-400" />
                             </div>
                           )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 leading-snug">
+                              {title || <span className="text-gray-400 italic">Product deleted</span>}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Qty&nbsp;{item.quantity}&nbsp;&times;&nbsp;Rs.&nbsp;{Number(item.price).toLocaleString()}
+                            </p>
+                            {(item.selected_size || item.selected_color) && (
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {item.selected_size && (
+                                  <span className="inline-flex items-center text-xs font-semibold bg-black text-white px-2.5 py-0.5 rounded-full">
+                                    Size&nbsp;{item.selected_size}
+                                  </span>
+                                )}
+                                {item.selected_color && (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white border border-gray-300 text-gray-700 px-2.5 py-0.5 rounded-full">
+                                    <span
+                                      className="w-3 h-3 rounded-full border border-gray-300 flex-shrink-0"
+                                      style={{ backgroundColor: COLOR_HEX_MAP[item.selected_color] || '#ccc' }}
+                                    />
+                                    {item.selected_color}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-sm font-bold text-gray-800 flex-shrink-0 pt-0.5">
+                            Rs.&nbsp;{(Number(item.price) * item.quantity).toLocaleString()}
+                          </p>
                         </div>
-                        <p className="text-sm font-bold text-gray-800 flex-shrink-0">
-                          Rs.&nbsp;{(Number(item.price) * item.quantity).toLocaleString()}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

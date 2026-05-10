@@ -28,22 +28,28 @@ export class CartManager {
     }));
   }
 
-  static addToCart(product: Product, quantity: number = 1): CartItem[] {
+  static addToCart(product: Product, quantity: number = 1, selectedSize?: string, selectedColor?: string): CartItem[] {
     const cart = this.getCart();
-    const existingItemIndex = cart.findIndex(item => item.product.id === product.id);
+    const existingItemIndex = cart.findIndex(
+      item =>
+        item.product.id === product.id &&
+        (item.selectedSize || '') === (selectedSize || '') &&
+        (item.selectedColor || '') === (selectedColor || '')
+    );
 
     if (existingItemIndex > -1) {
       cart[existingItemIndex].quantity += quantity;
     } else {
       cart.push({
-        id: `cart-${product.id}-${Date.now()}`,
+        id: `cart-${product.id}-${selectedSize || ''}-${selectedColor || ''}-${Date.now()}`,
         product,
-        quantity
+        quantity,
+        selectedSize,
+        selectedColor,
       });
     }
 
     this.saveCart(cart);
-    console.log('Cart after adding:', cart); // Debug log
     return cart;
   }
 

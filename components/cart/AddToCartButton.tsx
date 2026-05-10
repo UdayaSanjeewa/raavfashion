@@ -8,21 +8,23 @@ import { ShoppingBag, Plus, Minus, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddToCartButtonProps {
-  product: Product;
+  product: Product & { selectedSize?: string; selectedColor?: string };
   variant?: 'default' | 'outline' | 'secondary';
   size?: 'sm' | 'default' | 'lg';
   showQuantity?: boolean;
   className?: string;
 }
 
-export function AddToCartButton({ 
-  product, 
-  variant = 'default', 
+export function AddToCartButton({
+  product,
+  variant = 'default',
   size = 'default',
   showQuantity = false,
   className = ''
 }: AddToCartButtonProps) {
   const { addToCart, updateQuantity, isInCart, getItemQuantity } = useCart();
+  const selectedSize = product.selectedSize;
+  const selectedColor = product.selectedColor;
   const [isAdding, setIsAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
   
@@ -31,12 +33,12 @@ export function AddToCartButton({
 
   const handleAddToCart = async () => {
     setIsAdding(true);
-    
+
     try {
-      console.log('Adding product to cart:', product.title, 'quantity:', quantity); // Debug log
-      addToCart(product, quantity);
+      addToCart(product, quantity, selectedSize, selectedColor);
+      const variantDesc = [selectedSize, selectedColor].filter(Boolean).join(' · ');
       toast.success(`${product.title} added to cart!`, {
-        description: `Quantity: ${quantity}`,
+        description: variantDesc ? `${variantDesc} · Qty: ${quantity}` : `Quantity: ${quantity}`,
         action: {
           label: 'View Cart',
           onClick: () => {

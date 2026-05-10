@@ -37,11 +37,9 @@ export function useCart() {
     };
   }, []);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    const updatedCart = CartManager.addToCart(product, quantity);
-    console.log('Adding to cart, new cart state:', updatedCart); // Debug log
+  const addToCart = (product: Product, quantity: number = 1, selectedSize?: string, selectedColor?: string) => {
+    const updatedCart = CartManager.addToCart(product, quantity, selectedSize, selectedColor);
     setCart(updatedCart);
-    // Trigger a custom event to notify other components
     window.dispatchEvent(new CustomEvent('cartUpdated'));
   };
 

@@ -180,6 +180,8 @@ export default function CheckoutPage() {
         price: item.product.price,
         subtotal: item.product.price * item.quantity,
         seller_id: item.product.seller_id || null,
+        selected_size: item.selectedSize || null,
+        selected_color: item.selectedColor || null,
       }));
 
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems);

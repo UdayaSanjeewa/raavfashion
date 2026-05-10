@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Package, Clock, CheckCircle, XCircle, Truck } from 'lucide-react';
+import { ArrowLeft, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, Truck } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -17,6 +17,8 @@ interface OrderItem {
   quantity: number;
   price: number;
   subtotal: number;
+  selected_size?: string | null;
+  selected_color?: string | null;
 }
 
 interface Order {
@@ -211,11 +213,25 @@ export default function OrdersPage() {
                         <img
                           src={item.product_image}
                           alt={item.product_title}
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
                         />
                         <div className="flex-1">
                           <h4 className="font-medium text-gray-900">{item.product_title}</h4>
                           <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                          {(item.selected_size || item.selected_color) && (
+                            <div className="flex flex-wrap gap-1.5 mt-1.5">
+                              {item.selected_size && (
+                                <span className="inline-flex items-center text-xs font-semibold bg-black text-white px-2.5 py-0.5 rounded-full">
+                                  Size&nbsp;{item.selected_size}
+                                </span>
+                              )}
+                              {item.selected_color && (
+                                <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700 px-2.5 py-0.5 rounded-full">
+                                  {item.selected_color}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <p className="text-sm font-medium text-gray-900 mt-1">
                             {formatPrice(item.subtotal)}
                           </p>
