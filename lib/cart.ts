@@ -10,7 +10,6 @@ export class CartManager {
     if (typeof window === 'undefined') return [];
     try {
       const cart = localStorage.getItem(this.STORAGE_KEY);
-      console.log('Getting cart from localStorage:', cart); // Debug log
       return cart ? JSON.parse(cart) : [];
     } catch {
       return [];
@@ -19,7 +18,6 @@ export class CartManager {
 
   static saveCart(cart: CartItem[]): void {
     if (typeof window === 'undefined') return;
-    console.log('Saving cart to localStorage:', cart); // Debug log
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cart));
     // Dispatch storage event for cross-tab sync
     window.dispatchEvent(new StorageEvent('storage', {
@@ -53,17 +51,17 @@ export class CartManager {
     return cart;
   }
 
-  static removeFromCart(productId: string): CartItem[] {
+  static removeFromCart(cartItemId: string): CartItem[] {
     const cart = this.getCart();
-    const updatedCart = cart.filter(item => item.product.id !== productId);
+    const updatedCart = cart.filter(item => item.id !== cartItemId);
     this.saveCart(updatedCart);
     return updatedCart;
   }
 
-  static updateQuantity(productId: string, quantity: number): CartItem[] {
+  static updateQuantity(cartItemId: string, quantity: number): CartItem[] {
     const cart = this.getCart();
-    const itemIndex = cart.findIndex(item => item.product.id === productId);
-    
+    const itemIndex = cart.findIndex(item => item.id === cartItemId);
+
     if (itemIndex > -1) {
       if (quantity <= 0) {
         cart.splice(itemIndex, 1);

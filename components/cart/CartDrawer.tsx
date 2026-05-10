@@ -13,14 +13,37 @@ import {
   SheetTrigger,
   SheetFooter 
 } from '@/components/ui/sheet';
-import { 
-  ShoppingCart, 
-  Plus, 
-  Minus, 
-  Trash2, 
-  X,
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
   ShoppingBag
 } from 'lucide-react';
+
+const COLOR_HEX_MAP: Record<string, string> = {
+  'Black':    '#000000',
+  'White':    '#FFFFFF',
+  'Grey':     '#9CA3AF',
+  'Navy':     '#1E3A5F',
+  'Blue':     '#3B82F6',
+  'Sky Blue': '#7DD3FC',
+  'Red':      '#EF4444',
+  'Maroon':   '#7F1D1D',
+  'Pink':     '#F472B6',
+  'Peach':    '#FBBF8A',
+  'Orange':   '#F97316',
+  'Yellow':   '#FACC15',
+  'Green':    '#22C55E',
+  'Olive':    '#6B7280',
+  'Khaki':    '#C3B091',
+  'Beige':    '#F5F0E8',
+  'Brown':    '#92400E',
+  'Camel':    '#C19A6B',
+  'Cream':    '#FFFDD0',
+  'Gold':     '#D4AF37',
+  'Silver':   '#C0C0C0',
+};
 import { toast } from 'sonner';
 
 interface CartDrawerProps {
@@ -56,12 +79,12 @@ export function CartDrawer({ children }: CartDrawerProps) {
     }).format(price);
   };
 
-  const handleQuantityChange = (productId: string, newQuantity: number) => {
+  const handleQuantityChange = (cartItemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(cartItemId);
       toast.success('Item removed from cart');
     } else {
-      updateQuantity(productId, newQuantity);
+      updateQuantity(cartItemId, newQuantity);
     }
   };
 
@@ -101,10 +124,6 @@ export function CartDrawer({ children }: CartDrawerProps) {
               <Button onClick={() => setIsOpen(false)}>
                 Continue Shopping
               </Button>
-              {/* Debug info */}
-              <div className="mt-4 text-xs text-gray-400">
-                Debug: Cart length: {cart?.length || 0}, Items: {itemCount}
-              </div>
             </div>
           ) : (
             <>
@@ -114,38 +133,54 @@ export function CartDrawer({ children }: CartDrawerProps) {
                   {cart.map((item) => (
                     <div
                       key={item.id}
-                      className="flex gap-4 p-4 bg-gray-50 rounded-lg"
+                      className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
                     >
-                      <div className="relative w-16 h-16 flex-shrink-0">
+                      <div className="w-16 h-16 flex-shrink-0">
                         <img
                           src={item.product.images[0]}
                           alt={item.product.title}
                           className="w-full h-full object-cover rounded-md"
                         />
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <Link
                           href={`/product/${item.product.id}`}
                           onClick={() => setIsOpen(false)}
-                          className="font-medium text-gray-900 hover:text-blue-600 line-clamp-2"
+                          className="font-semibold text-sm text-gray-900 hover:text-gray-600 line-clamp-1 leading-tight"
                         >
                           {item.product.title}
                         </Link>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {item.product.location}
-                        </p>
+
+                        {/* Size & Color chips */}
+                        {(item.selectedSize || item.selectedColor) && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.selectedSize && (
+                              <span className="inline-flex items-center text-[11px] font-bold bg-black text-white px-2 py-0.5 rounded-full leading-none">
+                                {item.selectedSize}
+                              </span>
+                            )}
+                            {item.selectedColor && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white border border-gray-200 text-gray-700 px-2 py-0.5 rounded-full leading-none">
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full border border-gray-200 flex-shrink-0"
+                                  style={{ backgroundColor: COLOR_HEX_MAP[item.selectedColor] || '#ccc' }}
+                                />
+                                {item.selectedColor}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         <div className="flex items-center justify-between mt-2">
-                          <span className="font-bold text-blue-600">
+                          <span className="font-bold text-sm text-gray-900">
                             {formatPrice(item.product.price)}
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <Button
                               variant="outline"
                               size="icon"
-                              onClick={() => 
-                                handleQuantityChange(item.product.id, item.quantity - 1)
-                              }
+                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                               className="h-6 w-6"
                             >
                               <Minus className="h-3 w-3" />
@@ -156,9 +191,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                             <Button
                               variant="outline"
                               size="icon"
-                              onClick={() => 
-                                handleQuantityChange(item.product.id, item.quantity + 1)
-                              }
+                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                               className="h-6 w-6"
                             >
                               <Plus className="h-3 w-3" />
@@ -166,7 +199,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => removeFromCart(item.product.id)}
+                              onClick={() => removeFromCart(item.id)}
                               className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -201,7 +234,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                     </Button>
                     <Link href="/checkout" className="flex-1">
                       <Button
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        className="w-full bg-black hover:bg-gray-900 text-white"
                         onClick={() => setIsOpen(false)}
                       >
                         Checkout

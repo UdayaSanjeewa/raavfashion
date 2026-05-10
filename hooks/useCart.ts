@@ -10,22 +10,16 @@ export function useCart() {
 
   useEffect(() => {
     const initialCart = CartManager.getCart();
-    console.log('Initial cart load:', initialCart); // Debug log
     setCart(initialCart);
     setIsLoading(false);
     
     // Listen for storage changes to sync cart across tabs
     const handleStorageChange = () => {
-      const updatedCart = CartManager.getCart();
-      console.log('Storage change detected, updating cart:', updatedCart); // Debug log
-      setCart(updatedCart);
+      setCart(CartManager.getCart());
     };
-    
-    // Listen for custom cart update events
+
     const handleCartUpdate = () => {
-      const updatedCart = CartManager.getCart();
-      console.log('Cart update event, refreshing cart:', updatedCart); // Debug log
-      setCart(updatedCart);
+      setCart(CartManager.getCart());
     };
     
     window.addEventListener('storage', handleStorageChange);
@@ -43,14 +37,14 @@ export function useCart() {
     window.dispatchEvent(new CustomEvent('cartUpdated'));
   };
 
-  const removeFromCart = (productId: string) => {
-    const updatedCart = CartManager.removeFromCart(productId);
+  const removeFromCart = (cartItemId: string) => {
+    const updatedCart = CartManager.removeFromCart(cartItemId);
     setCart(updatedCart);
     window.dispatchEvent(new CustomEvent('cartUpdated'));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    const updatedCart = CartManager.updateQuantity(productId, quantity);
+  const updateQuantity = (cartItemId: string, quantity: number) => {
+    const updatedCart = CartManager.updateQuantity(cartItemId, quantity);
     setCart(updatedCart);
     window.dispatchEvent(new CustomEvent('cartUpdated'));
   };

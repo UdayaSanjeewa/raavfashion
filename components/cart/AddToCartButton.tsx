@@ -37,8 +37,8 @@ export function AddToCartButton({
     try {
       addToCart(product, quantity, selectedSize, selectedColor);
       const variantDesc = [selectedSize, selectedColor].filter(Boolean).join(' · ');
-      toast.success(`${product.title} added to cart!`, {
-        description: variantDesc ? `${variantDesc} · Qty: ${quantity}` : `Quantity: ${quantity}`,
+      toast.success('Added to bag!', {
+        description: variantDesc ? `${product.title} · ${variantDesc}` : product.title,
         action: {
           label: 'View Cart',
           onClick: () => {
@@ -49,8 +49,7 @@ export function AddToCartButton({
       });
       // Reset quantity to 1 after adding
       setQuantity(1);
-    } catch (error) {
-      console.error('Error adding to cart:', error); // Debug log
+    } catch {
       toast.error('Failed to add item to cart');
     } finally {
       setIsAdding(false);
