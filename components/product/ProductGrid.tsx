@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/types';
-import { MapPin, Clock, Star, BadgeCheck, ShoppingCart } from 'lucide-react';
+import { MapPin, Clock, ShoppingCart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface ProductGridProps {
@@ -24,13 +24,8 @@ export function ProductGrid({ products, viewMode = 'grid' }: ProductGridProps) {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d ago`;
-    }
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    return `${Math.floor(diffInHours / 24)}d ago`;
   };
 
   if (products.length === 0) {
@@ -53,130 +48,123 @@ export function ProductGrid({ products, viewMode = 'grid' }: ProductGridProps) {
           : 'space-y-4'
       }
     >
-      {products.map((product) => (
-        <Link
-          key={product.id}
-          href={`/product/${product.id}`}
-          className={
-            viewMode === 'grid'
-              ? 'group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200'
-              : 'group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 flex'
-          }
-        >
-          {/* Product Image */}
-          <div
+      {products.map((product) => {
+        const discount = product.originalPrice
+          ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+          : 0;
+
+        return (
+          <Link
+            key={product.id}
+            href={`/product/${product.id}`}
             className={
               viewMode === 'grid'
-                ? 'relative aspect-[4/3] overflow-hidden'
-                : 'relative w-48 h-36 overflow-hidden flex-shrink-0'
+                ? 'group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-300'
+                : 'group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-300 flex'
             }
           >
-            {product.images && product.images.length > 0 && product.images[0] ? (
-              <Image
-                src={product.images[0]}
-                alt={product.title}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">No image</span>
-              </div>
-            )}
-
-            {/* Badges */}
-            <div className="absolute top-3 left-3 flex flex-col gap-2">
-              {product.isFeatured && (
-                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-semibold">
-                  Featured
-                </Badge>
-              )}
-              {product.isNew && (
-                <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-semibold">
-                  New
-                </Badge>
-              )}
-              <Badge variant="secondary" className="bg-black/70 text-white border-0 capitalize">
-                {product.condition}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Product Info */}
-          <div className="p-5 flex-1">
-            <h3
+            {/* Product Image */}
+            <div
               className={
                 viewMode === 'grid'
-                  ? 'font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors mb-2'
-                  : 'font-bold text-xl text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors mb-2'
+                  ? 'relative aspect-[4/3] overflow-hidden'
+                  : 'relative w-48 h-36 overflow-hidden flex-shrink-0'
               }
             >
-              {product.title}
-            </h3>
+              {product.images && product.images.length > 0 && product.images[0] ? (
+                <Image
+                  src={product.images[0]}
+                  alt={product.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-400">No image</span>
+                </div>
+              )}
 
-            <div className="flex items-center gap-2 mb-3">
-              <span
+              {/* Badges — top-left */}
+              <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                {product.isFeatured && (
+                  <span className="bg-black text-white text-[9px] font-semibold tracking-[0.1em] uppercase px-2 py-0.5 rounded-sm">
+                    Featured
+                  </span>
+                )}
+                {product.isNew && (
+                  <span className="bg-white text-black text-[9px] font-semibold tracking-[0.1em] uppercase px-2 py-0.5 border border-black rounded-sm">
+                    New
+                  </span>
+                )}
+                {/* Only show condition badge if it's NOT "new" (avoids duplication with isNew badge) */}
+                {product.condition !== 'new' && (
+                  <span className="bg-black/70 text-white text-[9px] font-semibold tracking-[0.08em] uppercase px-2 py-0.5 rounded-sm">
+                    {product.condition}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Product Info */}
+            <div className="p-5 flex-1">
+              <h3
                 className={
-                  viewMode === 'grid' ? 'text-2xl font-bold text-blue-600' : 'text-3xl font-bold text-blue-600'
+                  viewMode === 'grid'
+                    ? 'font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-black transition-colors mb-2'
+                    : 'font-bold text-xl text-gray-900 line-clamp-1 group-hover:text-black transition-colors mb-2'
                 }
               >
-                {formatPrice(product.price)}
-              </span>
-              {product.originalPrice && (
-                <>
-                  <span className="text-sm text-gray-500 line-through">
-                    {formatPrice(product.originalPrice)}
-                  </span>
-                  <Badge variant="destructive" className="text-xs">
-                    -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                  </Badge>
-                </>
-              )}
-            </div>
+                {product.title}
+              </h3>
 
-            <p
-              className={
-                viewMode === 'grid'
-                  ? 'text-gray-600 text-sm line-clamp-2 mb-3'
-                  : 'text-gray-600 text-base line-clamp-3 mb-4'
-              }
-            >
-              {product.description}
-            </p>
-
-            {/* Seller Info */}
-            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
-              <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                {product.seller.name[0]}
+              {/* Price row */}
+              <div className="flex items-center gap-2 mb-3">
+                <span
+                  className={
+                    viewMode === 'grid'
+                      ? 'text-2xl font-bold text-gray-900'
+                      : 'text-3xl font-bold text-gray-900'
+                  }
+                >
+                  {formatPrice(product.price)}
+                </span>
+                {product.originalPrice && (
+                  <>
+                    <span className="text-sm text-gray-400 line-through">
+                      {formatPrice(product.originalPrice)}
+                    </span>
+                    <Badge variant="destructive" className="text-xs">
+                      -{discount}%
+                    </Badge>
+                  </>
+                )}
               </div>
-              <div className="flex-1">
+
+              <p
+                className={
+                  viewMode === 'grid'
+                    ? 'text-gray-600 text-sm line-clamp-2 mb-3'
+                    : 'text-gray-600 text-base line-clamp-3 mb-4'
+                }
+              >
+                {product.description}
+              </p>
+
+              {/* Location & Time */}
+              <div className="flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-1">
-                  <span className="font-medium text-sm text-gray-900">
-                    {product.seller.name}
-                  </span>
-                  <BadgeCheck className="h-3 w-3 text-blue-500" />
+                  <MapPin className="h-3 w-3" />
+                  <span>{product.location}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-600">{product.seller.rating}</span>
+                  <Clock className="h-3 w-3" />
+                  <span>{formatTimeAgo(product.createdAt)}</span>
                 </div>
               </div>
             </div>
-
-            {/* Location & Time */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                <span>{product.location}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{formatTimeAgo(product.createdAt)}</span>
-              </div>
-            </div>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 }
