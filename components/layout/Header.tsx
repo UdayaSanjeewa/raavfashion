@@ -125,7 +125,7 @@ export function Header() {
       {/* ── MAIN HEADER ── */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div className="w-full px-5 md:px-10">
-          <div className="relative flex items-center h-14 md:h-16">
+          <div className="relative flex items-center h-16 md:h-[72px]">
 
             {/* LEFT — DESKTOP NAV */}
             <nav className="hidden lg:flex items-center gap-6 xl:gap-8 flex-1">
@@ -174,16 +174,16 @@ export function Header() {
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <Link href="/" className="flex items-center">
                 <span
-                  className="font-black italic text-black leading-none select-none"
+                  className="font-black italic text-black leading-none select-none tracking-tight"
                   style={{
                     fontFamily: 'var(--font-bc), Impact, sans-serif',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: 'clamp(1.25rem, 2.5vw, 1.6rem)',
-                    letterSpacing: '-0.02em',
+                    fontSize: 'clamp(1.55rem, 3vw, 2.1rem)',
+                    letterSpacing: '-0.03em',
                   }}
                 >
-                  RAAV<span className="opacity-40 ml-1.5">FASHION</span>
+                  RAAV<span className="opacity-35 ml-2">FASHION</span>
                 </span>
               </Link>
             </div>

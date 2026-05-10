@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 const SLIDES = [
   {
-    image: 'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    image: 'https://images.pexels.com/photos/2220316/pexels-photo-2220316.jpeg?auto=compress&cs=tinysrgb&w=1600',
     eyebrow: 'New Arrivals',
     headline: 'Effortless\nElegance',
     sub: 'Discover the new season collection',
@@ -24,7 +24,7 @@ const SLIDES = [
     align: 'right' as const,
   },
   {
-    image: 'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    image: 'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1600',
     eyebrow: 'Traditional Wear',
     headline: 'Heritage\nMeets Modern',
     sub: 'Authentic ethnic wear for every occasion',
@@ -70,17 +70,17 @@ export function HeroSection() {
 
   const overlayStyle =
     slide.align === 'right'
-      ? 'linear-gradient(to left, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.05) 60%, transparent 100%)'
+      ? 'linear-gradient(to left, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)'
       : slide.align === 'center'
-      ? 'rgba(0,0,0,0.38)'
-      : 'linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.05) 60%, transparent 100%)';
+      ? 'rgba(0,0,0,0.48)'
+      : 'linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)';
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-gray-200"
+      className="relative w-full overflow-hidden bg-black"
       style={{ height: '88vh', minHeight: 500, maxHeight: 860 }}
     >
-      {/* Images */}
+      {/* Images — desaturated with CSS filter for B&W theme */}
       {SLIDES.map((s, i) => (
         <Image
           key={s.image}
@@ -89,11 +89,11 @@ export function HeroSection() {
           fill
           priority={i === 0}
           className={`object-cover transition-opacity duration-700 ${i === current && !fading ? 'opacity-100' : 'opacity-0'}`}
-          style={{ zIndex: 1 }}
+          style={{ zIndex: 1, filter: 'grayscale(100%) contrast(1.05) brightness(0.9)' }}
         />
       ))}
 
-      {/* Overlay */}
+      {/* Gradient overlay */}
       <div className="absolute inset-0 z-[2]" style={{ background: overlayStyle }} />
 
       {/* Content */}
@@ -102,7 +102,7 @@ export function HeroSection() {
           className={`max-w-lg transition-all duration-600 ${fading ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'}`}
           style={{ transitionDuration: '600ms' }}
         >
-          <p className="text-white/65 text-[11px] font-semibold tracking-[0.35em] uppercase mb-4">
+          <p className="text-white/55 text-[11px] font-semibold tracking-[0.35em] uppercase mb-4">
             {slide.eyebrow}
           </p>
           <h1
@@ -118,20 +118,20 @@ export function HeroSection() {
           >
             {slide.headline}
           </h1>
-          <p className="text-white/65 text-sm md:text-base mb-8 font-light">
+          <p className="text-white/60 text-sm md:text-base mb-8 font-light">
             {slide.sub}
           </p>
           <div className={`flex gap-3 flex-wrap ${slide.align === 'center' ? 'justify-center' : slide.align === 'right' ? 'justify-end' : ''}`}>
             <Link
               href={slide.cta.href}
-              className="inline-block bg-white text-black text-[11px] font-semibold tracking-[0.18em] uppercase px-8 py-3.5 hover:bg-gray-50 transition-colors duration-200"
+              className="inline-block bg-white text-black text-[11px] font-semibold tracking-[0.18em] uppercase px-8 py-3.5 hover:bg-gray-100 transition-colors duration-200"
             >
               {slide.cta.label}
             </Link>
             {slide.ctaSecondary && (
               <Link
                 href={slide.ctaSecondary.href}
-                className="inline-block border border-white/80 text-white text-[11px] font-semibold tracking-[0.18em] uppercase px-8 py-3.5 hover:bg-white/10 transition-colors duration-200"
+                className="inline-block border border-white/70 text-white text-[11px] font-semibold tracking-[0.18em] uppercase px-8 py-3.5 hover:bg-white/10 transition-colors duration-200"
               >
                 {slide.ctaSecondary.label}
               </Link>

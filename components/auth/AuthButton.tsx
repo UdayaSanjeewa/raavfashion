@@ -46,23 +46,16 @@ export function AuthButton() {
 
   if (!user) {
     return (
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-1.5">
         <Link href="/auth/signin">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <span className="inline-block text-[11px] font-semibold tracking-[0.12em] uppercase text-gray-600 hover:text-black px-3 py-1.5 transition-colors duration-150">
             Sign In
-          </Button>
+          </span>
         </Link>
         <Link href="/auth/signup">
-          <Button
-            size="sm"
-            className="bg-black hover:bg-gray-800 text-white"
-          >
+          <span className="inline-block text-[11px] font-semibold tracking-[0.12em] uppercase bg-black text-white px-4 py-1.5 hover:bg-gray-800 transition-colors duration-150">
             Sign Up
-          </Button>
+          </span>
         </Link>
       </div>
     );
