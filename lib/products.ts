@@ -122,7 +122,7 @@ export async function getCategories(): Promise<Category[]> {
         id: category.id,
         name: category.name,
         slug: category.slug,
-        image: category.image_url || category.image || '',
+        image: category.image || category.image_url || '',
         description: category.description || '',
         productCount: count || 0
       };
