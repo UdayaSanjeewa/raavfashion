@@ -56,17 +56,23 @@ interface ProductDetails {
 interface Order {
   id: string;
   user_id: string;
+  order_number: string;
   total_amount: number;
   status: string;
   payment_status: string;
-  shipping_address: any;
+  payment_method: string;
+  shipping_address: string;
+  shipping_city: string;
+  shipping_postal_code: string;
+  customer_name: string;
+  customer_email: string;
+  customer_mobile: string;
+  notes: string;
   created_at: string;
   updated_at: string;
 }
 
 interface OrderWithDetails extends Order {
-  customer_name?: string;
-  customer_email?: string;
   items?: (OrderItem & { product?: ProductDetails })[];
 }
 
@@ -125,12 +131,6 @@ export default function AdminOrderManagement() {
 
       const ordersWithDetails = await Promise.all(
         (ordersData || []).map(async (order) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', order.user_id)
-            .maybeSingle();
-
           const { data: items } = await supabase
             .from('order_items')
             .select('*')
@@ -153,8 +153,6 @@ export default function AdminOrderManagement() {
 
           return {
             ...order,
-            customer_name: profile?.full_name || 'Unknown Customer',
-            customer_email: profile?.email || 'N/A',
             items: itemsWithProducts,
           };
         })
@@ -268,12 +266,23 @@ export default function AdminOrderManagement() {
     );
   };
 
+  const getPaymentMethodBadge = (method: string) => {
+    if (method === 'cash_on_delivery') {
+      return <Badge className="bg-orange-100 text-orange-800">Cash on Delivery</Badge>;
+    }
+    if (method === 'card_payment') {
+      return <Badge className="bg-blue-100 text-blue-800">Card Payment</Badge>;
+    }
+    return <Badge className="bg-gray-100 text-gray-800">{method || 'N/A'}</Badge>;
+  };
+
   const filteredOrders = orders.filter((order) => {
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
     const matchesPayment = filterPaymentStatus === 'all' || order.payment_status === filterPaymentStatus;
     const matchesSearch =
       order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customer_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.id.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesStatus && matchesPayment && matchesSearch;
@@ -433,10 +442,11 @@ export default function AdminOrderManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order ID</TableHead>
+                    <TableHead>Order</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Items</TableHead>
                     <TableHead>Total Amount</TableHead>
+                    <TableHead>Payment Method</TableHead>
                     <TableHead>Order Status</TableHead>
                     <TableHead>Payment Status</TableHead>
                     <TableHead>Date</TableHead>
@@ -446,7 +456,7 @@ export default function AdminOrderManagement() {
                 <TableBody>
                   {filteredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                         No orders found
                       </TableCell>
                     </TableRow>
@@ -454,17 +464,24 @@ export default function AdminOrderManagement() {
                     filteredOrders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-mono text-sm">
-                          {order.id.substring(0, 8)}...
+                          <div className="font-semibold text-gray-900">#{order.order_number}</div>
+                          <div className="text-xs text-gray-400">{order.id.substring(0, 8)}...</div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{order.customer_name}</div>
-                            <div className="text-sm text-gray-500">{order.customer_email}</div>
+                            <div className="font-medium">{order.customer_name || 'N/A'}</div>
+                            <div className="text-sm text-gray-500">{order.customer_email || 'N/A'}</div>
+                            {order.customer_mobile && (
+                              <div className="text-xs text-gray-400">{order.customer_mobile}</div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>{order.items?.length || 0} items</TableCell>
                         <TableCell className="font-semibold">
                           Rs. {Number(order.total_amount).toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          {getPaymentMethodBadge(order.payment_method)}
                         </TableCell>
                         <TableCell>
                           <div className="space-y-2">
@@ -541,13 +558,19 @@ export default function AdminOrderManagement() {
                   <h3 className="font-semibold mb-3">Customer Information</h3>
                   <div className="space-y-2 text-sm">
                     <div>
-                      <span className="text-gray-600">Name:</span>
-                      <p className="font-medium">{selectedOrder.customer_name}</p>
+                      <span className="text-gray-500">Name</span>
+                      <p className="font-medium">{selectedOrder.customer_name || 'N/A'}</p>
                     </div>
                     <div>
-                      <span className="text-gray-600">Email:</span>
-                      <p className="font-medium">{selectedOrder.customer_email}</p>
+                      <span className="text-gray-500">Email</span>
+                      <p className="font-medium">{selectedOrder.customer_email || 'N/A'}</p>
                     </div>
+                    {selectedOrder.customer_mobile && (
+                      <div>
+                        <span className="text-gray-500">Mobile</span>
+                        <p className="font-medium">{selectedOrder.customer_mobile}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -555,12 +578,16 @@ export default function AdminOrderManagement() {
                   <h3 className="font-semibold mb-3">Order Status</h3>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">Order:</span>
+                      <span className="text-sm text-gray-500">Order:</span>
                       {getStatusBadge(selectedOrder.status)}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">Payment:</span>
+                      <span className="text-sm text-gray-500">Payment Status:</span>
                       {getPaymentStatusBadge(selectedOrder.payment_status)}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">Payment Method:</span>
+                      {getPaymentMethodBadge(selectedOrder.payment_method)}
                     </div>
                   </div>
                 </div>
@@ -568,16 +595,22 @@ export default function AdminOrderManagement() {
 
               <div>
                 <h3 className="font-semibold mb-3">Shipping Address</h3>
-                <div className="bg-gray-50 p-4 rounded-lg text-sm">
-                  {typeof selectedOrder.shipping_address === 'object' ? (
-                    <pre className="whitespace-pre-wrap">
-                      {JSON.stringify(selectedOrder.shipping_address, null, 2)}
-                    </pre>
-                  ) : (
-                    <p>{selectedOrder.shipping_address || 'No address provided'}</p>
+                <div className="bg-gray-50 p-4 rounded-lg text-sm space-y-1">
+                  <p>{selectedOrder.shipping_address || 'No address provided'}</p>
+                  {selectedOrder.shipping_city && (
+                    <p>{selectedOrder.shipping_city}{selectedOrder.shipping_postal_code ? `, ${selectedOrder.shipping_postal_code}` : ''}</p>
                   )}
                 </div>
               </div>
+
+              {selectedOrder.notes && (
+                <div>
+                  <h3 className="font-semibold mb-3">Order Notes</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
+                    {selectedOrder.notes}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <h3 className="font-semibold mb-3">Order Items</h3>
