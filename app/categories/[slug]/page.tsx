@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import type { Product, Category } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MapPin, Clock, Star, BadgeCheck, ShoppingCart } from 'lucide-react';
+import { MapPin, Clock, ShoppingCart } from 'lucide-react';
 
 export default function CategoryPage() {
   const params = useParams();
@@ -253,104 +253,92 @@ export default function CategoryPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/product/${product.id}`}
-                    className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200"
-                  >
-                    {/* Product Image */}
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      {product.images && product.images.length > 0 && product.images[0] ? (
-                        <Image
-                          src={product.images[0]}
-                          alt={product.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-400">No image</span>
-                        </div>
-                      )}
-
-                      {/* Badges */}
-                      <div className="absolute top-3 left-3 flex flex-col gap-2">
-                        {product.isFeatured && (
-                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-semibold">
-                            Featured
-                          </Badge>
+                {filteredProducts.map((product) => {
+                  const discount = product.originalPrice
+                    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+                    : 0;
+                  return (
+                    <Link
+                      key={product.id}
+                      href={`/product/${product.id}`}
+                      className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-300"
+                    >
+                      {/* Product Image */}
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        {product.images && product.images.length > 0 && product.images[0] ? (
+                          <Image
+                            src={product.images[0]}
+                            alt={product.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-400">No image</span>
+                          </div>
                         )}
-                        {product.isNew && (
-                          <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-semibold">
-                            New
-                          </Badge>
-                        )}
-                        <Badge variant="secondary" className="bg-black/70 text-white border-0 capitalize">
-                          {product.condition}
-                        </Badge>
-                      </div>
-                    </div>
 
-                    {/* Product Info */}
-                    <div className="p-5">
-                      <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors mb-2">
-                        {product.title}
-                      </h3>
-
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="text-2xl font-bold text-blue-600">
-                          {formatPrice(product.price)}
-                        </span>
-                        {product.originalPrice && (
-                          <>
-                            <span className="text-sm text-gray-500 line-through">
-                              {formatPrice(product.originalPrice)}
+                        {/* Badges */}
+                        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                          {product.isFeatured && (
+                            <span className="bg-black text-white text-[9px] font-semibold tracking-[0.1em] uppercase px-2 py-0.5 rounded-sm">
+                              Featured
                             </span>
-                            <Badge variant="destructive" className="text-xs">
-                              -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                            </Badge>
-                          </>
-                        )}
+                          )}
+                          {product.isNew && (
+                            <span className="bg-white text-black text-[9px] font-semibold tracking-[0.1em] uppercase px-2 py-0.5 border border-black rounded-sm">
+                              New
+                            </span>
+                          )}
+                          {product.condition !== 'new' && (
+                            <span className="bg-black/70 text-white text-[9px] font-semibold tracking-[0.08em] uppercase px-2 py-0.5 rounded-sm">
+                              {product.condition}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-                        {product.description}
-                      </p>
+                      {/* Product Info */}
+                      <div className="p-5">
+                        <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-black transition-colors mb-2">
+                          {product.title}
+                        </h3>
 
-                      {/* Seller Info */}
-                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
-                        <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                          {product.seller.name[0]}
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-2xl font-bold text-gray-900">
+                            {formatPrice(product.price)}
+                          </span>
+                          {product.originalPrice && (
+                            <>
+                              <span className="text-sm text-gray-400 line-through">
+                                {formatPrice(product.originalPrice)}
+                              </span>
+                              <Badge variant="destructive" className="text-xs">
+                                -{discount}%
+                              </Badge>
+                            </>
+                          )}
                         </div>
-                        <div className="flex-1">
+
+                        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                          {product.description}
+                        </p>
+
+                        {/* Location & Time */}
+                        <div className="flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
                           <div className="flex items-center gap-1">
-                            <span className="font-medium text-sm text-gray-900">
-                              {product.seller.name}
-                            </span>
-                            <BadgeCheck className="h-3 w-3 text-blue-500" />
+                            <MapPin className="h-3 w-3" />
+                            <span>{product.location}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                            <span className="text-xs text-gray-600">{product.seller.rating}</span>
+                            <Clock className="h-3 w-3" />
+                            <span>{formatTimeAgo(product.createdAt)}</span>
                           </div>
                         </div>
                       </div>
-
-                      {/* Location & Time */}
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          <span>{product.location}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{formatTimeAgo(product.createdAt)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
