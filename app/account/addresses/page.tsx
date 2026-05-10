@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, MapPin, Plus, Edit, Trash2, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Plus, CreditCard as Edit, Trash2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Address {
@@ -35,6 +35,7 @@ export default function AddressesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [formData, setFormData] = useState({
+    label: 'Home',
     name: '',
     phone: '',
     address_line1: '',
@@ -122,6 +123,7 @@ export default function AddressesPage() {
   const handleEdit = (address: Address) => {
     setEditingAddress(address);
     setFormData({
+      label: (address as any).label || 'Home',
       name: address.name,
       phone: address.phone,
       address_line1: address.address_line1,
@@ -170,6 +172,7 @@ export default function AddressesPage() {
   const resetForm = () => {
     setEditingAddress(null);
     setFormData({
+      label: 'Home',
       name: '',
       phone: '',
       address_line1: '',
@@ -224,6 +227,22 @@ export default function AddressesPage() {
               </DialogHeader>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="label">Address Label *</Label>
+                  <select
+                    id="label"
+                    name="label"
+                    value={formData.label}
+                    onChange={handleInputChange}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    required
+                  >
+                    <option value="Home">Home</option>
+                    <option value="Work">Work</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name *</Label>
@@ -311,7 +330,7 @@ export default function AddressesPage() {
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-rose-500" />
-                    <CardTitle className="text-base">{address.city}</CardTitle>
+                    <CardTitle className="text-base">{(address as any).label || address.city}</CardTitle>
                     {address.is_default && (
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     )}

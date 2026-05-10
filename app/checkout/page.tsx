@@ -135,6 +135,7 @@ export default function CheckoutPage() {
         const hasAddresses = savedAddresses.length > 0;
         await supabase.from('user_addresses').insert({
           user_id: user.id,
+          label: 'Home',
           name: formData.name,
           phone: formData.mobile,
           address_line1: formData.address,
