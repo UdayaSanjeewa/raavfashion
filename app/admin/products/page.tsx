@@ -6,7 +6,7 @@ import { AuthManager } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Edit, Trash2, ArrowLeft, Star } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import {
   AlertDialog,
@@ -97,9 +97,10 @@ export default function AdminProducts() {
       .eq('id', deleteId);
 
     if (error) {
+      console.error('Delete error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete product',
+        description: error.message || 'Failed to delete product',
         variant: 'destructive',
       });
     } else {
