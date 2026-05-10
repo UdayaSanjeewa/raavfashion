@@ -179,11 +179,11 @@ export function Header() {
                     fontFamily: 'var(--font-bc), Impact, sans-serif',
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: 'clamp(1.55rem, 3vw, 2.1rem)',
+                    fontSize: 'clamp(1.85rem, 3.5vw, 2.6rem)',
                     letterSpacing: '-0.03em',
                   }}
                 >
-                  RAAV<span className="opacity-35 ml-2">FASHION</span>
+                  RAAV<span className="text-gray-400 ml-2">FASHION</span>
                 </span>
               </Link>
             </div>
