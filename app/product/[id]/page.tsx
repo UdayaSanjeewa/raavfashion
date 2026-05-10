@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getProductById } from '@/lib/products';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
 import { WatchlistButton } from '@/components/watchlist/WatchlistButton';
@@ -9,14 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
-  Share2, Star, MapPin, Clock, BadgeCheck,
+  Share2, MapPin, Clock,
   ChevronLeft, ChevronRight, X, Maximize2,
-  Ruler, Palette, Tag, Shirt, Play
+  Ruler, Palette, Tag, Shirt, Play, ArrowLeft
 } from 'lucide-react';
 import type { Product } from '@/types';
 
 export default function ProductPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -96,6 +97,15 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-5 group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          <span className="text-sm font-medium">Back</span>
+        </button>
+
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-8 p-6 lg:p-8">
 
@@ -301,26 +311,6 @@ export default function ProductPage() {
                     <span>{formatTimeAgo(product.createdAt)}</span>
                   </div>
                 )}
-              </div>
-
-              {/* Seller */}
-              <div className="bg-gray-50 rounded-none p-4 mb-5 flex items-center gap-3 border border-gray-100">
-                <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  {product.seller.name[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-gray-900 text-sm truncate">{product.seller.name}</span>
-                    <BadgeCheck className="h-4 w-4 text-rose-500 flex-shrink-0" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 text-yellow-400 fill-current" />
-                    <span className="text-xs text-gray-600">{product.seller.rating} rating</span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="flex-shrink-0 border-gray-200 text-gray-700 hover:bg-gray-100 rounded-none">
-                  Contact
-                </Button>
               </div>
 
               {/* Add to Cart */}
