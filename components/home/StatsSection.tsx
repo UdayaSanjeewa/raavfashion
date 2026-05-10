@@ -6,14 +6,14 @@ import { Truck, RefreshCw, ShieldCheck, CreditCard } from 'lucide-react';
 const PERKS = [
   { icon: Truck,        title: 'Free Island-Wide Delivery', desc: 'On orders over Rs. 3,000' },
   { icon: RefreshCw,    title: '30-Day Easy Returns',       desc: 'Hassle-free returns' },
-  { icon: ShieldCheck,  title: 'Verified Sellers',          desc: 'Every product authenticated' },
+  { icon: ShieldCheck,  title: 'Authentic Products',        desc: 'Every item quality checked' },
   { icon: CreditCard,   title: 'Secure Payments',           desc: 'Multiple payment options' },
 ];
 
 const STATS = [
   { value: '15,000+', label: 'Styles Available' },
   { value: '8,000+',  label: 'Happy Customers'  },
-  { value: '200+',    label: 'Verified Sellers'  },
+  { value: '500+',    label: 'New Arrivals Weekly'},
   { value: '4.9★',    label: 'Average Rating'    },
 ];
 
@@ -53,7 +53,7 @@ export function StatsSection() {
         </div>
       </section>
 
-      {/* ── SELLER BANNER ── */}
+      {/* ── BRAND BANNER ── */}
       <section className="relative bg-black overflow-hidden py-24">
         <div
           className="absolute inset-0 opacity-15"
@@ -65,7 +65,7 @@ export function StatsSection() {
         />
         <div className="relative z-10 max-w-2xl mx-auto px-5 md:px-10 text-center">
           <p className="text-[10px] font-semibold tracking-[0.35em] uppercase text-white/40 mb-5">
-            Become a Seller
+            New Season
           </p>
           <h2
             className="text-white mb-6 leading-tight"
@@ -77,16 +77,16 @@ export function StatsSection() {
               letterSpacing: '-0.02em',
             }}
           >
-            Share Your Style With Sri Lanka
+            Discover Your New Style
           </h2>
           <p className="text-white/45 max-w-sm mx-auto text-sm leading-relaxed mb-10">
-            Join hundreds of fashion sellers on RAAV FASHION. Reach thousands of buyers and grow your brand.
+            Explore the latest arrivals in women&apos;s, men&apos;s, and traditional fashion. Premium quality, delivered island-wide.
           </p>
           <Link
-            href="/seller/register"
+            href="/categories"
             className="inline-block border border-white text-white text-[11px] font-semibold tracking-[0.2em] uppercase px-10 py-4 hover:bg-white hover:text-black transition-colors duration-200"
           >
-            Start Selling Today
+            Shop New Arrivals
           </Link>
         </div>
       </section>

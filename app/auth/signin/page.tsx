@@ -37,7 +37,7 @@ export default function SignInPage() {
         toast.error(result.error || 'Sign in failed');
       } else {
         const role = result.user?.role || 'user';
-        const dashboardPath = role === 'admin' ? '/admin' : role === 'seller' ? '/seller/dashboard' : '/';
+        const dashboardPath = role === 'admin' ? '/admin' : '/';
         toast.success('Welcome back!');
         setTimeout(() => { router.push(dashboardPath); router.refresh(); }, 500);
       }

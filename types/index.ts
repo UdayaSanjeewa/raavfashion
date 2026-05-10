@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: 'customer' | 'seller' | 'admin';
+  role: 'customer' | 'admin';
 }
 
 export interface Category {

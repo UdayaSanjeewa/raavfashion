@@ -61,7 +61,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-xs text-gray-400 leading-relaxed mb-5">
-              Sri Lanka&apos;s premier fashion destination. Premium styles from verified sellers.
+              Sri Lanka&apos;s premier fashion destination. Premium styles, curated for you.
             </p>
             <div className="flex gap-3">
               {[
@@ -104,12 +104,12 @@ export function Footer() {
               ],
             },
             {
-              title: 'Sellers',
+              title: 'My Account',
               links: [
-                { name: 'Become a Seller',    href: '/seller/register'   },
-                { name: 'Seller Dashboard',   href: '/seller/dashboard'  },
-                { name: 'Seller Guidelines',  href: '/help'              },
-                { name: 'Commission Rates',   href: '/help'              },
+                { name: 'Sign In',        href: '/auth/signin'      },
+                { name: 'Register',       href: '/auth/signup'      },
+                { name: 'My Orders',      href: '/account/orders'   },
+                { name: 'Wishlist',       href: '/account/watchlist'},
               ],
             },
             {

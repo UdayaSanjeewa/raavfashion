@@ -24,16 +24,7 @@ export function AuthButton() {
 
   const getDashboardLink = () => {
     if (!user) return '/account';
-
-    switch (user.role) {
-      case 'admin':
-        return '/admin';
-      case 'seller':
-        return '/seller/dashboard';
-      case 'user':
-      default:
-        return '/account';
-    }
+    return user.role === 'admin' ? '/admin' : '/account';
   };
 
   if (isLoading) {
@@ -81,9 +72,7 @@ export function AuthButton() {
         <DropdownMenuItem asChild>
           <Link href={getDashboardLink()} className="flex items-center cursor-pointer">
             <User className="mr-2 h-4 w-4" />
-            <span>
-              {user.role === 'admin' ? 'Admin Dashboard' : user.role === 'seller' ? 'Seller Dashboard' : 'Account Dashboard'}
-            </span>
+            <span>{user.role === 'admin' ? 'Admin Dashboard' : 'Account Dashboard'}</span>
           </Link>
         </DropdownMenuItem>
 
@@ -96,30 +85,7 @@ export function AuthButton() {
           </DropdownMenuItem>
         )}
 
-        {user.role === 'seller' && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link href="/seller/products" className="flex items-center cursor-pointer">
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                <span>My Products</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/seller/orders" className="flex items-center cursor-pointer">
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                <span>My Orders</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/seller/profile" className="flex items-center cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                <span>Business Profile</span>
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {user.role === 'user' && (
+        {user.role !== 'admin' && (
           <>
             <DropdownMenuItem asChild>
               <Link href="/account/profile" className="flex items-center cursor-pointer">
