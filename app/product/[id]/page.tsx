@@ -11,8 +11,33 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
   Share2, MapPin, Clock,
   ChevronLeft, ChevronRight, X, Maximize2,
-  Ruler, Palette, Tag, Shirt, Play, ArrowLeft
+  Ruler, Palette, Tag, Shirt, Play, ArrowLeft, Check
 } from 'lucide-react';
+
+const COLOR_MAP: Record<string, string> = {
+  'Black':    '#000000',
+  'White':    '#FFFFFF',
+  'Grey':     '#9CA3AF',
+  'Navy':     '#1E3A5F',
+  'Blue':     '#3B82F6',
+  'Sky Blue': '#7DD3FC',
+  'Red':      '#EF4444',
+  'Maroon':   '#7F1D1D',
+  'Pink':     '#F472B6',
+  'Peach':    '#FBBF8A',
+  'Orange':   '#F97316',
+  'Yellow':   '#FACC15',
+  'Green':    '#22C55E',
+  'Olive':    '#6B7280',
+  'Khaki':    '#C3B091',
+  'Beige':    '#F5F0E8',
+  'Brown':    '#92400E',
+  'Camel':    '#C19A6B',
+  'Cream':    '#FFFDD0',
+  'Gold':     '#D4AF37',
+  'Silver':   '#C0C0C0',
+  'Multi':    'linear-gradient(135deg,#f00,#0f0,#00f)',
+};
 import type { Product } from '@/types';
 
 export default function ProductPage() {
@@ -229,54 +254,101 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Fashion Attributes */}
+              {/* Sizes */}
               {product.sizes && product.sizes.length > 0 && (
-                <div className="mb-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Ruler className="h-4 w-4 text-gray-500" />
-                    <span className="font-semibold text-gray-900 text-sm">Size</span>
-                    <span className="text-sm text-gray-500">— {selectedSize}</span>
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Ruler className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">Size</span>
+                    </div>
+                    {selectedSize && (
+                      <span className="text-sm font-semibold text-gray-700 bg-gray-100 px-2.5 py-0.5 rounded-full">
+                        {selectedSize}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-3 py-1.5 border text-sm font-medium transition-all ${
-                          selectedSize === size
-                            ? 'border-black bg-black text-white'
-                            : 'border-gray-200 text-gray-700 hover:border-gray-900 hover:text-black'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                    {product.sizes.map((size) => {
+                      const active = selectedSize === size;
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`relative min-w-[48px] h-11 px-3 text-sm font-bold border-2 transition-all duration-150 rounded-md
+                            ${active
+                              ? 'border-black bg-black text-white shadow-md scale-105'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-800 hover:text-black hover:shadow-sm'
+                            }`}
+                        >
+                          {size}
+                          {active && (
+                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black rounded-full flex items-center justify-center">
+                              <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
+                  {!selectedSize && (
+                    <p className="text-xs text-rose-500 mt-2 font-medium">Please select a size</p>
+                  )}
                 </div>
               )}
 
+              {/* Colors */}
               {product.colors && product.colors.length > 0 && (
-                <div className="mb-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Palette className="h-4 w-4 text-gray-500" />
-                    <span className="font-semibold text-gray-900 text-sm">Color</span>
-                    <span className="text-sm text-gray-500">— {selectedColor}</span>
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Palette className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">Color</span>
+                    </div>
+                    {selectedColor && (
+                      <span className="text-sm font-semibold text-gray-700 bg-gray-100 px-2.5 py-0.5 rounded-full">
+                        {selectedColor}
+                      </span>
+                    )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {product.colors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`px-3 py-1.5 border text-sm font-medium transition-all ${
-                          selectedColor === color
-                            ? 'border-black bg-black text-white'
-                            : 'border-gray-200 text-gray-700 hover:border-gray-900'
-                        }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap gap-3">
+                    {product.colors.map((color) => {
+                      const active = selectedColor === color;
+                      const hex = COLOR_MAP[color];
+                      const isLight = ['White', 'Cream', 'Beige', 'Yellow', 'Silver', 'Gold'].includes(color);
+                      return (
+                        <button
+                          key={color}
+                          onClick={() => setSelectedColor(color)}
+                          title={color}
+                          className="flex flex-col items-center gap-1.5 group"
+                        >
+                          <span
+                            className={`w-10 h-10 rounded-full border-2 transition-all duration-150 flex items-center justify-center
+                              ${active
+                                ? 'border-black ring-2 ring-black ring-offset-2 scale-110 shadow-md'
+                                : 'border-gray-200 hover:border-gray-500 hover:scale-105 hover:shadow-sm'
+                              }`}
+                            style={hex?.startsWith('linear') ? { background: hex } : { backgroundColor: hex || '#ccc' }}
+                          >
+                            {active && (
+                              <Check
+                                className={`w-4 h-4 ${isLight ? 'text-black' : 'text-white'}`}
+                                strokeWidth={3}
+                              />
+                            )}
+                          </span>
+                          <span className={`text-[11px] font-medium leading-tight text-center max-w-[48px] truncate
+                            ${active ? 'text-black font-bold' : 'text-gray-500 group-hover:text-gray-800'}`}>
+                            {color}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
+                  {!selectedColor && (
+                    <p className="text-xs text-rose-500 mt-2 font-medium">Please select a color</p>
+                  )}
                 </div>
               )}
 
