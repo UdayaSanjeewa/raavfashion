@@ -4,63 +4,92 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   ShoppingCart,
   DollarSign,
-  TrendingUp,
-  TrendingDown,
   Users,
   Package,
-  ArrowUp,
-  ArrowDown,
-  Eye,
-  MoreVertical
+  Clock,
+  CheckCircle,
+  XCircle,
+  TruckIcon,
+  RefreshCw,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
-interface Stats {
+interface DashboardStats {
   totalOrders: number;
   totalRevenue: number;
-  totalSales: number;
-  newVisitors: number;
-  ordersChange: number;
-  revenueChange: number;
-  salesChange: number;
-  visitorsChange: number;
+  totalProducts: number;
+  totalCustomers: number;
+  pendingOrders: number;
+  processingOrders: number;
+  shippedOrders: number;
+  deliveredOrders: number;
+  cancelledOrders: number;
+  paidOrders: number;
+  ordersToday: number;
+  revenueToday: number;
 }
 
 interface TopCustomer {
-  id: string;
-  name: string;
-  email: string;
-  totalOrders: number;
-  totalSpent: number;
+  customer_name: string;
+  customer_email: string;
+  order_count: number;
+  total_spent: number;
 }
 
 interface TopProduct {
   id: string;
-  name: string;
-  category_id: string;
-  stock_quantity: number;
-  images?: any;
+  title: string;
+  price: number;
+  images: string[];
+  order_count: number;
 }
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({
-    totalOrders: 35367,
-    totalRevenue: 28346.00,
-    totalSales: 24573,
-    newVisitors: 5659,
-    ordersChange: 2.3,
-    revenueChange: -12.0,
-    salesChange: 2.3,
-    visitorsChange: -7.6,
-  });
+interface MonthlyData {
+  month: number;
+  order_count: number;
+  revenue: number;
+}
 
+interface RecentOrder {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  total_amount: number;
+  status: string;
+  payment_status: string;
+  payment_method: string;
+  created_at: string;
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const statusColors: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  processing: 'bg-cyan-100 text-cyan-800',
+  shipped: 'bg-blue-100 text-blue-800',
+  delivered: 'bg-green-100 text-green-800',
+  cancelled: 'bg-red-100 text-red-800',
+};
+
+const paymentStatusColors: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  paid: 'bg-green-100 text-green-800',
+  failed: 'bg-red-100 text-red-800',
+  refunded: 'bg-gray-100 text-gray-800',
+};
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [topCustomers, setTopCustomers] = useState<TopCustomer[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -68,72 +97,104 @@ export default function AdminDashboard() {
   }, []);
 
   const loadDashboardData = async () => {
+    setIsLoading(true);
     try {
-      const { count: ordersCount } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true });
+      const [
+        { count: totalOrders },
+        { data: revenueData },
+        { count: totalProducts },
+        { count: totalCustomers },
+        { count: pendingOrders },
+        { count: processingOrders },
+        { count: shippedOrders },
+        { count: deliveredOrders },
+        { count: cancelledOrders },
+        { count: paidOrders },
+        { data: todayData },
+        { data: topCustomerRows },
+        { data: topProductRows },
+        { data: monthlyRows },
+        { data: recentOrderRows },
+      ] = await Promise.all([
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('total_amount'),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).neq('role', 'admin'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'processing'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'shipped'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'delivered'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('payment_status', 'paid'),
+        supabase.from('orders').select('total_amount').gte('created_at', new Date().toISOString().split('T')[0]),
+        Promise.resolve({ data: null }),
+        supabase.from('products').select('id, title, price, images').limit(5),
+        supabase.from('orders').select('total_amount, created_at').gte('created_at', new Date(new Date().getFullYear(), 0, 1).toISOString()),
+        supabase.from('orders').select('id, order_number, customer_name, total_amount, status, payment_status, payment_method, created_at').order('created_at', { ascending: false }).limit(5),
+      ]);
 
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('total_amount');
+      const totalRevenue = (revenueData as any[])?.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) ?? 0;
+      const revenueToday = (todayData as any[])?.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0) ?? 0;
+      const ordersToday = todayData?.length ?? 0;
 
-      const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
-
-      const { count: usersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('role', 'customer');
-
-      const { data: products } = await supabase
-        .from('products')
-        .select('id, name, category_id, stock_quantity, images')
-        .limit(4);
-
-      const { data: customerOrders } = await supabase
-        .from('orders')
-        .select('user_id, total_amount, profiles(full_name, email)')
-        .limit(100);
-
-      const customerMap = new Map<string, { name: string; email: string; orders: number; spent: number }>();
-
-      customerOrders?.forEach(order => {
-        const userId = order.user_id;
-        const profile = order.profiles as any;
-        if (userId && profile) {
-          if (!customerMap.has(userId)) {
-            customerMap.set(userId, {
-              name: profile.full_name || 'Unknown',
-              email: profile.email || '',
-              orders: 0,
-              spent: 0
-            });
-          }
-          const customer = customerMap.get(userId)!;
-          customer.orders += 1;
-          customer.spent += order.total_amount || 0;
-        }
+      // Build monthly data from orders
+      const monthMap: Record<number, { order_count: number; revenue: number }> = {};
+      monthlyRows?.forEach((o: any) => {
+        const m = new Date(o.created_at).getMonth() + 1;
+        if (!monthMap[m]) monthMap[m] = { order_count: 0, revenue: 0 };
+        monthMap[m].order_count += 1;
+        monthMap[m].revenue += Number(o.total_amount || 0);
       });
-
-      const topCustomersList = Array.from(customerMap.entries())
-        .map(([id, data]) => ({
-          id,
-          name: data.name,
-          email: data.email,
-          totalOrders: data.orders,
-          totalSpent: data.spent
-        }))
-        .sort((a, b) => b.totalSpent - a.totalSpent)
-        .slice(0, 4);
-
-      setStats(prev => ({
-        ...prev,
-        totalOrders: ordersCount || 0,
-        totalRevenue: totalRevenue,
-        newVisitors: usersCount || 0,
+      const builtMonthly = Object.entries(monthMap).map(([month, d]) => ({
+        month: Number(month),
+        order_count: d.order_count,
+        revenue: d.revenue,
       }));
 
-      setTopCustomers(topCustomersList);
-      setTopProducts(products || []);
+      // Build top customers from order data
+      const { data: customerOrderRows } = await supabase
+        .from('orders')
+        .select('customer_name, customer_email, total_amount')
+        .not('customer_name', 'is', null);
+
+      const customerMap = new Map<string, TopCustomer>();
+      customerOrderRows?.forEach((o: any) => {
+        const key = o.customer_email || o.customer_name;
+        if (!key) return;
+        if (!customerMap.has(key)) {
+          customerMap.set(key, {
+            customer_name: o.customer_name || 'Unknown',
+            customer_email: o.customer_email || '',
+            order_count: 0,
+            total_spent: 0,
+          });
+        }
+        const c = customerMap.get(key)!;
+        c.order_count += 1;
+        c.total_spent += Number(o.total_amount || 0);
+      });
+      const sortedCustomers = Array.from(customerMap.values())
+        .sort((a, b) => b.total_spent - a.total_spent)
+        .slice(0, 5);
+
+      setStats({
+        totalOrders: totalOrders ?? 0,
+        totalRevenue,
+        totalProducts: totalProducts ?? 0,
+        totalCustomers: totalCustomers ?? 0,
+        pendingOrders: pendingOrders ?? 0,
+        processingOrders: processingOrders ?? 0,
+        shippedOrders: shippedOrders ?? 0,
+        deliveredOrders: deliveredOrders ?? 0,
+        cancelledOrders: cancelledOrders ?? 0,
+        paidOrders: paidOrders ?? 0,
+        ordersToday,
+        revenueToday,
+      });
+      setTopCustomers(sortedCustomers);
+      setTopProducts((topProductRows || []) as TopProduct[]);
+      setMonthlyData(builtMonthly);
+      setRecentOrders((recentOrderRows || []) as RecentOrder[]);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -141,284 +202,271 @@ export default function AdminDashboard() {
     }
   };
 
+  const maxMonthlyRevenue = Math.max(...monthlyData.map(m => m.revenue), 1);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Ecommerce Dashboard</h1>
-          <p className="text-gray-500 mt-1">Welcome back! Here's your store overview</p>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Store overview — {format(new Date(), 'MMMM d, yyyy')}</p>
         </div>
+        <Button onClick={loadDashboardData} variant="outline" size="sm">
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Primary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">{stats.totalOrders.toLocaleString()}</h3>
-                <div className="flex items-center mt-2">
-                  <span className="text-xs text-gray-500 mr-1">Increased by</span>
-                  <span className="text-xs font-semibold text-green-600 flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-0.5" />
-                    {stats.ordersChange}%
-                  </span>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500">Total Orders</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.totalOrders ?? 0}</p>
+                <p className="text-xs text-gray-400 mt-1">{stats?.ordersToday ?? 0} today</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <ShoppingCart className="w-5 h-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">
-                  ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </h3>
-                <div className="flex items-center mt-2">
-                  <span className="text-xs text-gray-500 mr-1">Decreased by</span>
-                  <span className="text-xs font-semibold text-red-600 flex items-center">
-                    <TrendingDown className="w-3 h-3 mr-0.5" />
-                    {Math.abs(stats.revenueChange)}%
-                  </span>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500">Total Revenue</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">
+                  Rs. {(stats?.totalRevenue ?? 0).toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Rs. {(stats?.revenueToday ?? 0).toLocaleString()} today</p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-orange-600" />
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-5 h-5 text-green-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">Total Sales</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">{stats.totalSales.toLocaleString()}</h3>
-                <div className="flex items-center mt-2">
-                  <span className="text-xs text-gray-500 mr-1">Increased by</span>
-                  <span className="text-xs font-semibold text-green-600 flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-0.5" />
-                    {stats.salesChange}%
-                  </span>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500">Total Products</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.totalProducts ?? 0}</p>
+                <Link href="/admin/products/new">
+                  <p className="text-xs text-blue-500 mt-1 hover:underline cursor-pointer">+ Add product</p>
+                </Link>
               </div>
-              <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
-                <Package className="w-6 h-6 text-teal-600" />
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Package className="w-5 h-5 text-orange-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">New Visitors</p>
-                <h3 className="text-3xl font-bold text-gray-900 mt-2">{stats.newVisitors.toLocaleString()}</h3>
-                <div className="flex items-center mt-2">
-                  <span className="text-xs text-gray-500 mr-1">Decreased by</span>
-                  <span className="text-xs font-semibold text-red-600 flex items-center">
-                    <TrendingDown className="w-3 h-3 mr-0.5" />
-                    {Math.abs(stats.visitorsChange)}%
-                  </span>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500">Customers</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{stats?.totalCustomers ?? 0}</p>
+                <p className="text-xs text-gray-400 mt-1">Registered users</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Order Status Breakdown */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {[
+          { label: 'Pending', count: stats?.pendingOrders, icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+          { label: 'Processing', count: stats?.processingOrders, icon: RefreshCw, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+          { label: 'Shipped', count: stats?.shippedOrders, icon: TruckIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Delivered', count: stats?.deliveredOrders, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+          { label: 'Cancelled', count: stats?.cancelledOrders, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' },
+        ].map(({ label, count, icon: Icon, color, bg }) => (
+          <Card key={label} className="border-0 shadow-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className={`w-10 h-10 ${bg} rounded-full flex items-center justify-center flex-shrink-0`}>
+                <Icon className={`w-4 h-4 ${color}`} />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">{label}</p>
+                <p className={`text-xl font-bold ${color}`}>{count ?? 0}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Top Customers & Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Top Customers</CardTitle>
+              <CardTitle className="text-base font-semibold">Top Customers</CardTitle>
               <Link href="/admin/users">
-                <Button variant="ghost" size="sm" className="text-blue-600">
-                  View All
-                </Button>
+                <Button variant="ghost" size="sm" className="text-blue-600 text-xs h-7">View All</Button>
               </Link>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {topCustomers.length > 0 ? (
-                topCustomers.map((customer, index) => (
-                  <div key={customer.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
-                          {customer.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+            {topCustomers.length > 0 ? (
+              <div className="space-y-3">
+                {topCustomers.map((c, i) => (
+                  <div key={i} className="flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarFallback className="bg-blue-100 text-blue-700 text-sm font-semibold">
+                          {c.customer_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-gray-900">{customer.name}</p>
-                        <p className="text-sm text-gray-500">{customer.email}</p>
+                        <p className="text-sm font-medium text-gray-900 leading-tight">{c.customer_name}</p>
+                        <p className="text-xs text-gray-500 truncate max-w-[160px]">{c.customer_email}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">${customer.totalSpent.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">Purchases {customer.totalOrders}</p>
+                      <p className="text-sm font-semibold text-gray-900">Rs. {Number(c.total_spent).toLocaleString()}</p>
+                      <p className="text-xs text-gray-400">{c.order_count} {c.order_count === 1 ? 'order' : 'orders'}</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-500 py-8">No customer data available</p>
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-400 py-8 text-sm">No customer data available</p>
+            )}
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Top Selling Products</CardTitle>
+              <CardTitle className="text-base font-semibold">Products</CardTitle>
               <Link href="/admin/products">
-                <Button variant="ghost" size="sm" className="text-blue-600">
-                  View All
-                </Button>
+                <Button variant="ghost" size="sm" className="text-blue-600 text-xs h-7">View All</Button>
               </Link>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {topProducts.length > 0 ? (
-                topProducts.map((product) => (
-                  <div key={product.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <Package className="w-6 h-6 text-gray-400" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{product.name}</p>
-                        <p className="text-sm text-gray-500">Product</p>
-                      </div>
+            {topProducts.length > 0 ? (
+              <div className="space-y-3">
+                {topProducts.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="w-11 h-11 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      {p.images?.[0] ? (
+                        <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <Badge
-                        variant={product.stock_quantity > 10 ? "default" : "destructive"}
-                        className={product.stock_quantity > 10 ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}
-                      >
-                        {product.stock_quantity > 10 ? 'In Stock' : 'Low Stock'}
-                      </Badge>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{p.title}</p>
+                      <p className="text-xs text-gray-500">Rs. {Number(p.price).toLocaleString()}</p>
                     </div>
+                    <Link href={`/admin/products/${p.id}/edit`}>
+                      <Button variant="ghost" size="sm" className="text-xs h-7 text-gray-500">Edit</Button>
+                    </Link>
                   </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-500 py-8">No product data available</p>
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-400 py-8 text-sm">No products available</p>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="border-0 shadow-sm lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Earnings Overview</CardTitle>
+      {/* Monthly Revenue Chart + Recent Orders */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <Card className="border-0 shadow-sm lg:col-span-3">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Monthly Revenue ({new Date().getFullYear()})</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-6 mb-6">
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Total Orders</span>
-                </div>
-                <p className="text-2xl font-bold text-gray-900">{(stats.totalOrders / 1000).toFixed(1)}k</p>
-                <div className="flex items-center mt-1">
-                  <ArrowUp className="w-3 h-3 text-green-600 mr-1" />
-                  <span className="text-xs text-green-600 font-semibold">0.25%</span>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Total Revenue</span>
-                </div>
-                <p className="text-2xl font-bold text-gray-900">${(stats.totalRevenue / 1000).toFixed(1)}k</p>
-                <div className="flex items-center mt-1">
-                  <ArrowUp className="w-3 h-3 text-green-600 mr-1" />
-                  <span className="text-xs text-green-600 font-semibold">0.33%</span>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Total Profit</span>
-                </div>
-                <p className="text-2xl font-bold text-gray-900">$58.5k</p>
-                <div className="flex items-center mt-1">
-                  <ArrowDown className="w-3 h-3 text-red-600 mr-1" />
-                  <span className="text-xs text-red-600 font-semibold">0.15%</span>
-                </div>
-              </div>
-            </div>
-            <div className="h-64 flex items-end justify-between space-x-2">
-              {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, index) => (
-                <div key={month} className="flex-1 flex flex-col items-center space-y-2">
-                  <div className="w-full bg-teal-500 rounded-t" style={{ height: `${Math.random() * 60 + 20}%` }}></div>
-                  <span className="text-xs text-gray-500">{month}</span>
-                </div>
-              ))}
+            <div className="flex items-end gap-1.5 h-48 mt-2">
+              {MONTHS.map((month, index) => {
+                const monthNum = index + 1;
+                const data = monthlyData.find(m => m.month === monthNum);
+                const height = data ? Math.max((data.revenue / maxMonthlyRevenue) * 100, 4) : 0;
+                const isCurrentMonth = monthNum === new Date().getMonth() + 1;
+                return (
+                  <div key={month} className="flex-1 flex flex-col items-center gap-1 group relative">
+                    {data && (
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                        Rs. {data.revenue.toLocaleString()}
+                      </div>
+                    )}
+                    <div className="w-full flex items-end h-40">
+                      <div
+                        className={`w-full rounded-t transition-all ${isCurrentMonth ? 'bg-blue-600' : data ? 'bg-blue-300 hover:bg-blue-400' : 'bg-gray-100'}`}
+                        style={{ height: `${height}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-400">{month}</span>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-600 to-blue-700 text-white">
-          <CardContent className="p-6 flex flex-col justify-between h-full">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">New Customers</h3>
-              <p className="text-sm opacity-90 mb-6">Increased by</p>
-              <div className="flex items-baseline space-x-2 mb-4">
-                <span className="text-4xl font-bold">34,784</span>
-                <span className="flex items-center text-sm">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  2.3%
-                </span>
-              </div>
+        <Card className="border-0 shadow-sm lg:col-span-2">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">Recent Orders</CardTitle>
+              <Link href="/admin/orders">
+                <Button variant="ghost" size="sm" className="text-blue-600 text-xs h-7">View All</Button>
+              </Link>
             </div>
-            <div className="space-y-3 mt-6">
-              <div className="flex items-center justify-between text-sm">
-                <span className="opacity-90">Monday</span>
-                <div className="flex-1 mx-3 bg-white/20 rounded-full h-2">
-                  <div className="bg-white rounded-full h-2" style={{ width: '70%' }}></div>
-                </div>
+          </CardHeader>
+          <CardContent>
+            {recentOrders.length > 0 ? (
+              <div className="space-y-3">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-mono font-semibold text-gray-700">#{order.order_number}</span>
+                      <span className="text-sm font-semibold text-gray-900">Rs. {Number(order.total_amount).toLocaleString()}</span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-1.5 truncate">{order.customer_name || 'N/A'}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${statusColors[order.status] || 'bg-gray-100 text-gray-700'}`}>
+                        {order.status}
+                      </span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${paymentStatusColors[order.payment_status] || 'bg-gray-100 text-gray-700'}`}>
+                        {order.payment_status}
+                      </span>
+                      {order.payment_method === 'cash_on_delivery' && (
+                        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-orange-100 text-orange-700">COD</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="opacity-90">Tuesday</span>
-                <div className="flex-1 mx-3 bg-white/20 rounded-full h-2">
-                  <div className="bg-white rounded-full h-2" style={{ width: '85%' }}></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="opacity-90">Wednesday</span>
-                <div className="flex-1 mx-3 bg-white/20 rounded-full h-2">
-                  <div className="bg-white rounded-full h-2" style={{ width: '90%' }}></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="opacity-90">Thursday</span>
-                <div className="flex-1 mx-3 bg-white/20 rounded-full h-2">
-                  <div className="bg-white rounded-full h-2" style={{ width: '75%' }}></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="opacity-90">Friday</span>
-                <div className="flex-1 mx-3 bg-white/20 rounded-full h-2">
-                  <div className="bg-white rounded-full h-2" style={{ width: '95%' }}></div>
-                </div>
-              </div>
-            </div>
+            ) : (
+              <p className="text-center text-gray-400 py-8 text-sm">No orders yet</p>
+            )}
           </CardContent>
         </Card>
       </div>
