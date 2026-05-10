@@ -51,10 +51,6 @@ export type Database = {
           category_id: string | null;
           condition: 'new' | 'used' | 'refurbished';
           location: string;
-          seller_id: string | null;
-          seller_name: string;
-          seller_avatar: string | null;
-          seller_rating: number;
           features: string[];
           tags: string[];
           is_new: boolean;
@@ -72,10 +68,6 @@ export type Database = {
           category_id?: string | null;
           condition: 'new' | 'used' | 'refurbished';
           location: string;
-          seller_id?: string | null;
-          seller_name: string;
-          seller_avatar?: string | null;
-          seller_rating?: number;
           features?: string[];
           tags?: string[];
           is_new?: boolean;
@@ -93,10 +85,6 @@ export type Database = {
           category_id?: string | null;
           condition?: 'new' | 'used' | 'refurbished';
           location?: string;
-          seller_id?: string | null;
-          seller_name?: string;
-          seller_avatar?: string | null;
-          seller_rating?: number;
           features?: string[];
           tags?: string[];
           is_new?: boolean;

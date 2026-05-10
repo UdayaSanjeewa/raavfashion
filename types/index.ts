@@ -25,13 +25,6 @@ export interface Product {
   category: Category;
   condition: 'new' | 'used' | 'refurbished';
   location: string;
-  seller_id: string;
-  seller: {
-    id: string;
-    name: string;
-    avatar?: string;
-    rating: number;
-  };
   // Fashion-specific
   sizes: string[];
   colors: string[];

@@ -158,17 +158,6 @@ export function WatchlistDrawer({ children }: WatchlistDrawerProps) {
                           <span>{formatTimeAgo(item.addedAt)}</span>
                         </div>
 
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="h-6 w-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                            {item.product.seller.name[0]}
-                          </div>
-                          <span className="text-sm text-gray-600">{item.product.seller.name}</span>
-                          <div className="flex items-center gap-1">
-                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                            <span className="text-xs text-gray-600">{item.product.seller.rating}</span>
-                          </div>
-                        </div>
-                        
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-blue-600">

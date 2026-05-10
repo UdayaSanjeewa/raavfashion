@@ -179,7 +179,6 @@ export default function CheckoutPage() {
         quantity: item.quantity,
         price: item.product.price,
         subtotal: item.product.price * item.quantity,
-        seller_id: item.product.seller_id || null,
         selected_size: item.selectedSize || null,
         selected_color: item.selectedColor || null,
       }));

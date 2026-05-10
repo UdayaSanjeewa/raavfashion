@@ -36,8 +36,7 @@ export default function WatchlistPage() {
     if (searchTerm) {
       filtered = filtered.filter(item =>
         item.product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.product.seller.name.toLowerCase().includes(searchTerm.toLowerCase())
+        item.product.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -290,18 +289,6 @@ export default function WatchlistPage() {
                               </Badge>
                             </>
                           )}
-                        </div>
-                      </div>
-
-                      {/* Seller Info */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="h-6 w-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                          {item.product.seller.name[0]}
-                        </div>
-                        <span className="text-sm text-gray-600">{item.product.seller.name}</span>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                          <span className="text-xs text-gray-600">{item.product.seller.rating}</span>
                         </div>
                       </div>
 

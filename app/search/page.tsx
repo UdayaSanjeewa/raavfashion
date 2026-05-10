@@ -68,13 +68,6 @@ function SearchPageContent() {
         },
         condition: product.condition,
         location: product.location,
-        seller_id: product.seller_id || '',
-        seller: {
-          id: product.seller_id || '',
-          name: product.seller_name || 'Unknown',
-          avatar: product.seller_avatar,
-          rating: parseFloat(product.seller_rating) || 0
-        },
         sizes: product.sizes || [],
         colors: product.colors || [],
         gender: product.gender || 'unisex',
@@ -159,7 +152,7 @@ function SearchPageContent() {
         filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
       case 'popular':
-        filtered.sort((a, b) => (b.seller.rating * 100) - (a.seller.rating * 100));
+        filtered.sort((a, b) => b.price - a.price);
         break;
       default:
         break;

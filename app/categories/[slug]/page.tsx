@@ -62,7 +62,7 @@ export default function CategoryPage() {
         filtered.sort((a, b) => b.price - a.price);
         break;
       case 'popular':
-        filtered.sort((a, b) => (b.seller.rating || 0) - (a.seller.rating || 0));
+        filtered.sort((a, b) => b.price - a.price);
         break;
       case 'newest':
       default:

@@ -28,7 +28,7 @@ const barlow = Barlow({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname        = usePathname();
   const hideHeaderFooter =
-    pathname?.startsWith('/seller') || pathname?.startsWith('/admin');
+    pathname?.startsWith('/admin');
 
   return (
     <html lang="en" className={`${barlowCondensed.variable} ${barlow.variable}`}>
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <title>RAAV FASHION — Premium Fashion Sri Lanka</title>
         <meta
           name="description"
-          content="RAAV FASHION — Sri Lanka's premier fashion destination. Shop the latest women's, men's and ethnic wear from verified sellers."
+          content="RAAV FASHION — Sri Lanka's premier fashion destination. Shop the latest women's, men's and ethnic wear."
         />
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#000000" />

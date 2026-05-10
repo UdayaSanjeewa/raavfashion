@@ -56,8 +56,6 @@ export function FeaturedProducts() {
           : fallback,
         condition: (p.condition as 'new' | 'used' | 'refurbished') || 'new',
         location: (p.location as string) || '',
-        seller_id: (p.seller_id as string) || '',
-        seller: { id: (p.seller_id as string) || '', name: (p.seller_name as string) || 'Vendor', avatar: p.seller_avatar as string, rating: (p.seller_rating as number) || 5 },
         sizes: (p.sizes as string[]) || [],
         colors: (p.colors as string[]) || [],
         gender: (p.gender as 'men' | 'women' | 'kids' | 'unisex') || 'unisex',
