@@ -127,7 +127,6 @@ export default function NewProduct() {
         images: filteredImages,
         category_id: formData.category_id || null,
         condition: formData.condition as 'new' | 'used' | 'refurbished',
-        location: '',
         features: filteredFeatures,
         tags: filteredTags,
         is_featured: formData.is_featured,

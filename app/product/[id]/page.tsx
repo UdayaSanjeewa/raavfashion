@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
-  Share2, MapPin, Clock,
+  Share2, Clock,
   ChevronLeft, ChevronRight, X, Maximize2,
   Ruler, Palette, Tag, Shirt, Play, ArrowLeft, Check
 } from 'lucide-react';
@@ -374,15 +374,10 @@ export default function ProductPage() {
                   <span className="text-gray-500">Condition</span>
                   <p className="font-medium text-gray-900 capitalize">{product.condition}</p>
                 </div>
-                {product.location && (
-                  <div className="col-span-2 flex items-center gap-1 text-gray-500">
-                    <MapPin className="h-3.5 w-3.5" />
-                    <span>{product.location}</span>
-                    <span className="mx-1">·</span>
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>{formatTimeAgo(product.createdAt)}</span>
-                  </div>
-                )}
+                <div className="col-span-2 flex items-center gap-1 text-gray-500">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{formatTimeAgo(product.createdAt)}</span>
+                </div>
               </div>
 
               {/* Add to Cart */}

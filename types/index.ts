@@ -24,7 +24,6 @@ export interface Product {
   images: string[];
   category: Category;
   condition: 'new' | 'used' | 'refurbished';
-  location: string;
   // Fashion-specific
   sizes: string[];
   colors: string[];

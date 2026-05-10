@@ -11,7 +11,6 @@ function mapProduct(p: Record<string, unknown>, category: Category): Product {
     images: (p.images as string[]) || [],
     category,
     condition: (p.condition as 'new' | 'used' | 'refurbished') || 'new',
-    location: (p.location as string) || 'Sri Lanka',
     sizes: (p.sizes as string[]) || [],
     colors: (p.colors as string[]) || [],
     gender: (p.gender as 'men' | 'women' | 'kids' | 'unisex') || 'unisex',

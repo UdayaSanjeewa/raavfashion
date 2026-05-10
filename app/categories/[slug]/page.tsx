@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import type { Product, Category } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Clock, ShoppingCart } from 'lucide-react';
+import { Clock, ShoppingCart } from 'lucide-react';
 
 export default function CategoryPage() {
   const params = useParams();
@@ -324,12 +324,8 @@ export default function CategoryPage() {
                           {product.description}
                         </p>
 
-                        {/* Location & Time */}
-                        <div className="flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            <span>{product.location}</span>
-                          </div>
+                        {/* Time */}
+                        <div className="flex items-center justify-end text-sm text-gray-500 pt-3 border-t border-gray-100">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             <span>{formatTimeAgo(product.createdAt)}</span>

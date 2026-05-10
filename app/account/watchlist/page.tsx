@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Heart, Search, ShoppingCart, Trash2, Star, MapPin, Clock, Grid2x2 as Grid, List, Filter } from 'lucide-react';
+import { ArrowLeft, Heart, Search, ShoppingCart, Trash2, Star, Clock, Grid2x2 as Grid, List, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function WatchlistPage() {
@@ -292,12 +292,8 @@ export default function WatchlistPage() {
                         </div>
                       </div>
 
-                      {/* Location & Time */}
-                      <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          <span>{item.product.location}</span>
-                        </div>
+                      {/* Time */}
+                      <div className="flex items-center justify-end text-sm text-gray-500 mb-4">
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           <span>Saved {formatTimeAgo(item.addedAt)}</span>

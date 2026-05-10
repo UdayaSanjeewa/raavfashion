@@ -26,7 +26,6 @@ interface Product {
   price: number;
   images: string[];
   condition: string;
-  location: string;
   is_featured: boolean;
   is_new: boolean;
   is_available: boolean;
@@ -204,7 +203,7 @@ export default function AdminProducts() {
                           )}
                         </div>
                         <p className="text-sm text-gray-600">
-                          {getCategoryName(product.category_id)} &middot; {product.location}
+                          {getCategoryName(product.category_id)}
                         </p>
                         <p className="text-lg font-bold text-gray-900 mt-1">
                           Rs. {product.price.toLocaleString()}

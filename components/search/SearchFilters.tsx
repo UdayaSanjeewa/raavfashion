@@ -20,7 +20,6 @@ interface SearchFiltersProps {
     minPrice: number;
     maxPrice: number;
     condition: string;
-    location: string;
     brand: string;
   };
 }
@@ -99,9 +98,9 @@ export function SearchFilters({
           {GENDERS.map((g) => (
             <button
               key={g}
-              onClick={() => onFilterChange({ gender: currentFilters.location === g ? null : g })}
+              onClick={() => onFilterChange({ gender: g })}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors capitalize ${
-                currentFilters.location === g
+                false
                   ? 'bg-rose-500 text-white border-rose-500'
                   : 'border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-600'
               }`}

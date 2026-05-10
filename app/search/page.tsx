@@ -27,7 +27,6 @@ function SearchPageContent() {
   const minPrice = parseInt(searchParams.get('minPrice') || '0');
   const maxPrice = parseInt(searchParams.get('maxPrice') || '10000000');
   const condition = searchParams.get('condition') || '';
-  const location = searchParams.get('location') || '';
   const brand = searchParams.get('brand') || '';
 
   useEffect(() => {
@@ -67,7 +66,6 @@ function SearchPageContent() {
           productCount: 0
         },
         condition: product.condition,
-        location: product.location,
         sizes: product.sizes || [],
         colors: product.colors || [],
         gender: product.gender || 'unisex',
@@ -125,13 +123,6 @@ function SearchPageContent() {
       );
     }
 
-    // Filter by location
-    if (location) {
-      filtered = filtered.filter(product =>
-        product.location.toLowerCase().includes(location.toLowerCase())
-      );
-    }
-
     // Filter by brand (check in features and tags)
     if (brand) {
       filtered = filtered.filter(product =>
@@ -185,7 +176,6 @@ function SearchPageContent() {
     (query ? 1 : 0) +
     (category ? 1 : 0) +
     (condition ? 1 : 0) +
-    (location ? 1 : 0) +
     (brand ? 1 : 0) +
     (minPrice > 0 || maxPrice < 10000000 ? 1 : 0);
 
@@ -222,7 +212,6 @@ function SearchPageContent() {
                 minPrice,
                 maxPrice,
                 condition,
-                location,
                 brand
               }}
             />
@@ -331,17 +320,6 @@ function SearchPageContent() {
                       Condition: {condition}
                       <button
                         onClick={() => updateFilters({ condition: null })}
-                        className="ml-1 hover:text-red-600"
-                      >
-                        ×
-                      </button>
-                    </Badge>
-                  )}
-                  {location && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      Location: {location}
-                      <button
-                        onClick={() => updateFilters({ location: null })}
                         className="ml-1 hover:text-red-600"
                       >
                         ×

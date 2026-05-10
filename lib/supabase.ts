@@ -50,11 +50,11 @@ export type Database = {
           images: string[];
           category_id: string | null;
           condition: 'new' | 'used' | 'refurbished';
-          location: string;
           features: string[];
           tags: string[];
           is_new: boolean;
           is_featured: boolean;
+          video_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -67,11 +67,11 @@ export type Database = {
           images?: string[];
           category_id?: string | null;
           condition: 'new' | 'used' | 'refurbished';
-          location: string;
           features?: string[];
           tags?: string[];
           is_new?: boolean;
           is_featured?: boolean;
+          video_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -84,11 +84,11 @@ export type Database = {
           images?: string[];
           category_id?: string | null;
           condition?: 'new' | 'used' | 'refurbished';
-          location?: string;
           features?: string[];
           tags?: string[];
           is_new?: boolean;
           is_featured?: boolean;
+          video_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };

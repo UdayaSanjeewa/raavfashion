@@ -21,7 +21,6 @@ import {
   ShoppingCart,
   Trash2,
   Star,
-  MapPin,
   Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -151,9 +150,6 @@ export function WatchlistDrawer({ children }: WatchlistDrawerProps) {
                         </Link>
                         
                         <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                          <MapPin className="h-3 w-3" />
-                          <span>{item.product.location}</span>
-                          <span>•</span>
                           <Clock className="h-3 w-3" />
                           <span>{formatTimeAgo(item.addedAt)}</span>
                         </div>
