@@ -47,7 +47,8 @@ function SearchPageContent() {
             slug,
             image
           )
-        `);
+        `)
+        .eq('is_available', true);
 
       if (error) throw error;
 

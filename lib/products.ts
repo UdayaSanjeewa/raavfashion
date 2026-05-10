@@ -53,6 +53,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
     .from('products')
     .select('*')
     .eq('is_featured', true)
+    .eq('is_available', true)
     .order('created_at', { ascending: false })
     .limit(6);
 
@@ -71,6 +72,7 @@ export async function getAllProducts(): Promise<Product[]> {
   const { data: productsData } = await supabase
     .from('products')
     .select('*')
+    .eq('is_available', true)
     .order('created_at', { ascending: false });
 
   if (!productsData || !categoriesData) return [];
@@ -89,6 +91,7 @@ export async function getProductById(id: string): Promise<Product | null> {
     .from('products')
     .select('*')
     .eq('id', id)
+    .eq('is_available', true)
     .maybeSingle();
 
   if (!productData || !categoriesData) return null;
@@ -112,7 +115,8 @@ export async function getCategories(): Promise<Category[]> {
       const { count } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
-        .eq('category_id', category.id);
+        .eq('category_id', category.id)
+        .eq('is_available', true);
 
       return {
         id: category.id,
@@ -139,6 +143,7 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
     .from('products')
     .select('*')
     .eq('category_id', categoryData.id)
+    .eq('is_available', true)
     .order('created_at', { ascending: false });
 
   if (!productsData || productsData.length === 0) return [];

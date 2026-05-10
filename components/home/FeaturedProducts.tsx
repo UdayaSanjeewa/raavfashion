@@ -32,6 +32,7 @@ export function FeaturedProducts() {
     const { data: rows } = await supabase
       .from('products')
       .select('*')
+      .eq('is_available', true)
       .order('is_featured', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(20);
