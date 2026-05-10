@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Loader2, ShoppingCart } from 'lucide-react';
+import { CircleCheck as CheckCircle, Circle as XCircle, Loader as Loader2, ShoppingCart } from 'lucide-react';
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -48,8 +48,8 @@ export default function VerifyEmailPage() {
               <ShoppingCart className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">E-GadgetLK</h1>
-              <p className="text-sm text-gray-500">Your Tech Store</p>
+              <h1 className="text-2xl font-bold text-gray-900">RAAV FASHION</h1>
+              <p className="text-sm text-gray-500">Your Fashion Destination</p>
             </div>
           </Link>
         </div>

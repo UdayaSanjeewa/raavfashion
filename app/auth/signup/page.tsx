@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Phone, Lock, Eye, EyeOff, User, ShoppingCart, Mail, MailCheck, AlertCircle } from 'lucide-react';
+import { Phone, Lock, Eye, EyeOff, User, ShoppingCart, Mail, MailCheck, CircleAlert as AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthManager } from '@/lib/auth';
@@ -51,7 +51,7 @@ export default function SignUpPage() {
         setShowVerificationMessage(true);
         toast.success('Account created! Please check your email to verify your account.');
       } else {
-        toast.success('Account created successfully! Welcome to E-GadgetLK!');
+        toast.success('Account created successfully! Welcome to RAAV FASHION!');
         setTimeout(() => {
           router.push('/');
           router.refresh();
@@ -91,8 +91,8 @@ export default function SignUpPage() {
                 <ShoppingCart className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">E-GadgetLK</h1>
-                <p className="text-sm text-gray-500">Your Tech Store</p>
+                <h1 className="text-2xl font-bold text-gray-900">RAAV FASHION</h1>
+                <p className="text-sm text-gray-500">Your Fashion Destination</p>
               </div>
             </Link>
           </div>
@@ -123,7 +123,7 @@ export default function SignUpPage() {
                   <p className="font-medium text-gray-900">What to do next:</p>
                   <ol className="list-decimal list-inside space-y-1 ml-2">
                     <li>Open your email inbox</li>
-                    <li>Look for an email from E-GadgetLK</li>
+                    <li>Look for an email from RAAV FASHION</li>
                     <li>Click the verification link</li>
                     <li>Sign in to your account</li>
                   </ol>
@@ -173,8 +173,8 @@ export default function SignUpPage() {
               <ShoppingCart className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">E-GadgetLK</h1>
-              <p className="text-sm text-gray-500">Your Tech Store</p>
+              <h1 className="text-2xl font-bold text-gray-900">RAAV FASHION</h1>
+              <p className="text-sm text-gray-500">Your Fashion Destination</p>
             </div>
           </Link>
         </div>

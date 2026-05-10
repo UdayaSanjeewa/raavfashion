@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mail, Lock, Eye, EyeOff, ShoppingCart, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ShoppingCart, CircleAlert as AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthManager } from '@/lib/auth';
@@ -87,8 +87,8 @@ export default function SignInPage() {
               <ShoppingCart className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">E-GadgetLK</h1>
-              <p className="text-sm text-gray-500">Your Tech Store</p>
+              <h1 className="text-2xl font-bold text-gray-900">RAAV FASHION</h1>
+              <p className="text-sm text-gray-500">Your Fashion Destination</p>
             </div>
           </Link>
         </div>
@@ -99,7 +99,7 @@ export default function SignInPage() {
               Welcome Back
             </CardTitle>
             <CardDescription className="text-center text-gray-600">
-              Sign in to explore the latest tech
+              Sign in to explore the latest fashion
             </CardDescription>
           </CardHeader>
           <CardContent>
