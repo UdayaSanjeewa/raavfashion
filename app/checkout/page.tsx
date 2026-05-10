@@ -12,17 +12,31 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, CreditCard, Truck, Package, MapPin, Wallet } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, Package, MapPin, Wallet, Plus, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+
+interface SavedAddress {
+  id: string;
+  name: string;
+  phone: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state?: string;
+  postal_code?: string;
+  country: string;
+  is_default: boolean;
+}
 
 export default function CheckoutPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { cart, cartTotal, clearCart } = useCart();
   const router = useRouter();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('new');
+  const [saveAddressToProfile, setSaveAddressToProfile] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,15 +49,11 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/auth/signin');
-    }
+    if (!authLoading && !user) router.push('/auth/signin');
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (cart.length === 0 && !authLoading) {
-      router.push('/');
-    }
+    if (cart.length === 0 && !authLoading) router.push('/');
   }, [cart, authLoading, router]);
 
   useEffect(() => {
@@ -55,77 +65,58 @@ export default function CheckoutPage() {
 
   const loadUserProfile = async () => {
     if (!user) return;
-
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (data) {
-      setFormData(prev => ({
-        ...prev,
-        name: data.name || user.name || '',
-        email: data.email || user.email || '',
-        mobile: data.mobile || user.mobile || '',
-        address: data.address || '',
-        city: data.city || '',
-        postal_code: data.postal_code || ''
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        name: user.name || '',
-        email: user.email || '',
-        mobile: user.mobile || ''
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      name: data?.name || (user as any).name || '',
+      email: data?.email || (user as any).email || '',
+      mobile: data?.mobile || (user as any).mobile || '',
+    }));
   };
 
   const loadSavedAddresses = async () => {
     if (!user) return;
-
-    const { data, error } = await supabase
-      .from('addresses')
+    const { data } = await supabase
+      .from('user_addresses')
       .select('*')
       .eq('user_id', user.id)
-      .order('is_default', { ascending: false });
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false });
 
-    if (data) {
+    if (data && data.length > 0) {
       setSavedAddresses(data);
-      const defaultAddress = data.find(addr => addr.is_default);
-      if (defaultAddress) {
-        setSelectedAddressId(defaultAddress.id);
-        loadAddressToForm(defaultAddress);
-      }
+      const def = data.find(a => a.is_default) || data[0];
+      setSelectedAddressId(def.id);
+      applyAddressToForm(def);
     }
   };
 
-  const loadAddressToForm = (address: any) => {
+  const applyAddressToForm = (addr: SavedAddress) => {
     setFormData(prev => ({
       ...prev,
-      name: address.full_name || prev.name,
-      mobile: address.phone || prev.mobile,
-      address: `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}`,
-      city: address.city || '',
-      postal_code: address.postal_code || ''
+      name: addr.name || prev.name,
+      mobile: addr.phone || prev.mobile,
+      address: [addr.address_line1, addr.address_line2].filter(Boolean).join(', '),
+      city: addr.city || '',
+      postal_code: addr.postal_code || '',
     }));
   };
 
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId);
-    const address = savedAddresses.find(addr => addr.id === addressId);
-    if (address) {
-      loadAddressToForm(address);
-    }
+    if (addressId === 'new') return;
+    const addr = savedAddresses.find(a => a.id === addressId);
+    if (addr) applyAddressToForm(addr);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handlePlaceOrder = async () => {
@@ -139,61 +130,59 @@ export default function CheckoutPage() {
     setIsPlacingOrder(true);
 
     try {
-      const orderNumberResult = await supabase.rpc('generate_order_number');
-
-      if (orderNumberResult.error) {
-        console.error('Error generating order number:', orderNumberResult.error);
-        throw orderNumberResult.error;
+      // Optionally save address to profile
+      if (saveAddressToProfile && selectedAddressId === 'new') {
+        const hasAddresses = savedAddresses.length > 0;
+        await supabase.from('user_addresses').insert({
+          user_id: user.id,
+          name: formData.name,
+          phone: formData.mobile,
+          address_line1: formData.address,
+          city: formData.city,
+          postal_code: formData.postal_code || null,
+          country: 'Sri Lanka',
+          is_default: !hasAddresses,
+        });
       }
 
-      const orderNumber = orderNumberResult.data;
-
-      const orderData = {
-        user_id: user.id,
-        order_number: orderNumber,
-        status: 'pending',
-        total_amount: cartTotal,
-        shipping_address: formData.address,
-        shipping_city: formData.city,
-        shipping_postal_code: formData.postal_code,
-        customer_name: formData.name,
-        customer_email: formData.email,
-        customer_mobile: formData.mobile,
-        payment_method: formData.payment_method,
-        payment_status: 'pending',
-        notes: formData.notes
-      };
+      const orderNumberResult = await supabase.rpc('generate_order_number');
+      if (orderNumberResult.error) throw orderNumberResult.error;
 
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .insert(orderData)
+        .insert({
+          user_id: user.id,
+          order_number: orderNumberResult.data,
+          status: 'pending',
+          total_amount: cartTotal,
+          shipping_address: formData.address,
+          shipping_city: formData.city,
+          shipping_postal_code: formData.postal_code,
+          customer_name: formData.name,
+          customer_email: formData.email,
+          customer_mobile: formData.mobile,
+          payment_method: formData.payment_method,
+          payment_status: 'pending',
+          notes: formData.notes,
+        })
         .select()
         .single();
 
-      if (orderError) {
-        console.error('Error creating order:', orderError);
-        throw orderError;
-      }
+      if (orderError) throw orderError;
 
       const orderItems = cart.map(item => ({
         order_id: order.id,
         product_id: item.product.id,
         product_title: item.product.title,
-        product_image: item.product.images && item.product.images.length > 0 ? item.product.images[0] : '',
+        product_image: item.product.images?.[0] || '',
         quantity: item.quantity,
         price: item.product.price,
         subtotal: item.product.price * item.quantity,
-        seller_id: item.product.seller_id || null
+        seller_id: item.product.seller_id || null,
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        console.error('Error creating order items:', itemsError);
-        throw itemsError;
-      }
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+      if (itemsError) throw itemsError;
 
       if (formData.payment_method === 'card_payment') {
         const paymentResult = await paymentGateway.initiatePayment({
@@ -206,7 +195,6 @@ export default function CheckoutPage() {
           customerMobile: formData.mobile,
           description: `Order ${order.order_number}`,
         });
-
         if (paymentResult.success && paymentResult.paymentUrl) {
           clearCart();
           window.location.href = paymentResult.paymentUrl;
@@ -217,10 +205,8 @@ export default function CheckoutPage() {
       }
 
       clearCart();
-
       toast.success('Order placed successfully!');
-      router.push(`/account/orders`);
-
+      router.push('/account/orders');
     } catch (error: any) {
       console.error('Error placing order:', error);
       toast.error(error.message || 'Failed to place order. Please try again.');
@@ -229,25 +215,18 @@ export default function CheckoutPage() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-LK', {
-      style: 'currency',
-      currency: 'LKR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', minimumFractionDigits: 0 }).format(price);
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500" />
       </div>
     );
   }
 
-  if (!user || cart.length === 0) {
-    return null;
-  }
+  if (!user || cart.length === 0) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -266,70 +245,76 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
+
+            {/* Saved Addresses */}
             {savedAddresses.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <MapPin className="h-5 w-5 text-rose-500" />
                     Saved Addresses
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {savedAddresses.map((address) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    {savedAddresses.map((addr) => (
                       <div
-                        key={address.id}
-                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                          selectedAddressId === address.id
-                            ? 'border-blue-600 bg-blue-50'
+                        key={addr.id}
+                        onClick={() => handleAddressSelect(addr.id)}
+                        className={`border rounded-xl p-4 cursor-pointer transition-all ${
+                          selectedAddressId === addr.id
+                            ? 'border-rose-500 bg-rose-50 ring-1 ring-rose-300'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
-                        onClick={() => handleAddressSelect(address.id)}
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-medium">{address.city}</p>
-                              {address.is_default && (
-                                <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded">
-                                  Default
-                                </span>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <p className="font-semibold text-sm text-gray-900 truncate">{addr.name}</p>
+                              {addr.is_default && (
+                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
                               )}
                             </div>
-                            <p className="text-sm text-gray-600">{address.full_name}</p>
-                            <p className="text-sm text-gray-600">{address.phone}</p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {address.address_line1}
-                              {address.address_line2 && `, ${address.address_line2}`}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {address.city}, {address.postal_code}
+                            <p className="text-xs text-gray-500">{addr.phone}</p>
+                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                              {addr.address_line1}{addr.address_line2 ? `, ${addr.address_line2}` : ''}, {addr.city}
+                              {addr.postal_code ? ` ${addr.postal_code}` : ''}
                             </p>
                           </div>
-                          {selectedAddressId === address.id && (
-                            <div className="h-5 w-5 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                              <div className="h-2 w-2 rounded-full bg-white"></div>
-                            </div>
-                          )}
+                          <div className={`h-4 w-4 rounded-full border-2 flex-shrink-0 mt-0.5 ${
+                            selectedAddressId === addr.id ? 'border-rose-500 bg-rose-500' : 'border-gray-300'
+                          }`}>
+                            {selectedAddressId === addr.id && (
+                              <div className="h-full w-full rounded-full flex items-center justify-center">
+                                <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
+
+                    {/* Use a different / new address */}
+                    <div
+                      onClick={() => handleAddressSelect('new')}
+                      className={`border rounded-xl p-4 cursor-pointer transition-all flex items-center gap-3 ${
+                        selectedAddressId === 'new'
+                          ? 'border-rose-500 bg-rose-50 ring-1 ring-rose-300'
+                          : 'border-dashed border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <Plus className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      <span className="text-sm text-gray-600 font-medium">Use a different address</span>
+                    </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3"
-                    onClick={() => setSelectedAddressId('')}
-                  >
-                    Use Different Address
-                  </Button>
                 </CardContent>
               </Card>
             )}
 
+            {/* Shipping form */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Truck className="h-5 w-5" />
                   Shipping Information
                 </CardTitle>
@@ -338,90 +323,62 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="mobile">Mobile Number *</Label>
-                  <Input
-                    id="mobile"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
-                    placeholder="+94771234567"
-                    required
-                  />
+                  <Input id="mobile" name="mobile" value={formData.mobile} onChange={handleInputChange} placeholder="+94771234567" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="address">Shipping Address *</Label>
-                  <Textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    rows={3}
-                    required
-                  />
+                  <Textarea id="address" name="address" value={formData.address} onChange={handleInputChange} rows={3} required />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="city" name="city" value={formData.city} onChange={handleInputChange} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="postal_code">Postal Code</Label>
-                    <Input
-                      id="postal_code"
-                      name="postal_code"
-                      value={formData.postal_code}
-                      onChange={handleInputChange}
-                    />
+                    <Input id="postal_code" name="postal_code" value={formData.postal_code} onChange={handleInputChange} />
                   </div>
                 </div>
 
+                {/* Save to profile option — only show when entering a new address */}
+                {selectedAddressId === 'new' && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="save_address"
+                      checked={saveAddressToProfile}
+                      onChange={(e) => setSaveAddressToProfile(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <Label htmlFor="save_address" className="cursor-pointer text-sm text-gray-700">
+                      Save this address to my profile
+                    </Label>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="notes">Order Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleInputChange}
-                    rows={3}
-                    placeholder="Any special instructions for delivery..."
-                  />
+                  <Textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} rows={3} placeholder="Any special instructions for delivery..." />
                 </div>
               </CardContent>
             </Card>
 
+            {/* Payment Method */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <CreditCard className="h-5 w-5" />
                   Payment Method
                 </CardTitle>
@@ -430,56 +387,50 @@ export default function CheckoutPage() {
                 <RadioGroup
                   value={formData.payment_method}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value }))}
+                  className="space-y-3"
                 >
-                  <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-blue-300 transition-colors">
+                  <div className={`flex items-center space-x-3 border rounded-xl p-4 cursor-pointer transition-all ${formData.payment_method === 'card_payment' ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'}`}>
                     <RadioGroupItem value="card_payment" id="card" />
                     <Label htmlFor="card" className="flex-1 cursor-pointer">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium flex items-center gap-2">
-                            <CreditCard className="h-4 w-4" />
-                            Card Payment
+                            <CreditCard className="h-4 w-4" /> Card Payment
                           </p>
-                          <p className="text-sm text-gray-600">Pay securely with your credit/debit card</p>
+                          <p className="text-sm text-gray-500">Pay securely with your credit/debit card</p>
                         </div>
                         {paymentGateway.isConfigured() && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                            Secure
-                          </span>
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Secure</span>
                         )}
                       </div>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-blue-300 transition-colors">
+
+                  <div className={`flex items-center space-x-3 border rounded-xl p-4 cursor-pointer transition-all ${formData.payment_method === 'cash_on_delivery' ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-gray-300'}`}>
                     <RadioGroupItem value="cash_on_delivery" id="cod" />
                     <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium flex items-center gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Cash on Delivery
-                          </p>
-                          <p className="text-sm text-gray-600">Pay when you receive your order</p>
-                        </div>
-                      </div>
+                      <p className="font-medium flex items-center gap-2">
+                        <Wallet className="h-4 w-4" /> Cash on Delivery
+                      </p>
+                      <p className="text-sm text-gray-500">Pay when you receive your order</p>
                     </Label>
                   </div>
                 </RadioGroup>
+
                 {!paymentGateway.isConfigured() && formData.payment_method === 'card_payment' && (
                   <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
-                      Card payment is not configured. Please contact support.
-                    </p>
+                    <p className="text-sm text-yellow-800">Card payment is not configured. Please contact support.</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
 
+          {/* Order Summary */}
           <div>
             <Card className="sticky top-8">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Package className="h-5 w-5" />
                   Order Summary
                 </CardTitle>
@@ -491,13 +442,13 @@ export default function CheckoutPage() {
                       <img
                         src={item.product.images[0]}
                         alt={item.product.title}
-                        className="w-16 h-16 object-cover rounded"
+                        className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
                       />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium line-clamp-2">{item.product.title}</p>
-                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium line-clamp-2 text-gray-900">{item.product.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity}</p>
                       </div>
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-semibold text-gray-900 flex-shrink-0">
                         {formatPrice(item.product.price * item.quantity)}
                       </p>
                     </div>
@@ -513,22 +464,22 @@ export default function CheckoutPage() {
                     <span className="text-gray-600">Shipping</span>
                     <span className="font-medium text-green-600">FREE</span>
                   </div>
-                  <div className="flex justify-between text-lg font-bold border-t pt-2">
+                  <div className="flex justify-between text-lg font-bold border-t pt-3">
                     <span>Total</span>
-                    <span className="text-blue-600">{formatPrice(cartTotal)}</span>
+                    <span className="text-rose-600">{formatPrice(cartTotal)}</span>
                   </div>
                 </div>
 
                 <Button
                   onClick={handlePlaceOrder}
                   disabled={isPlacingOrder}
-                  className="w-full"
+                  className="w-full bg-black hover:bg-gray-900 text-white"
                   size="lg"
                 >
                   {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
                 </Button>
 
-                <p className="text-xs text-center text-gray-500">
+                <p className="text-xs text-center text-gray-400">
                   By placing this order, you agree to our Terms of Service
                 </p>
               </CardContent>

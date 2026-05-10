@@ -10,13 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, MapPin, Plus, Edit, Trash2, Home, Briefcase, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Plus, Edit, Trash2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Address {
   id: string;
   user_id: string;
-  full_name: string;
+  name: string;
   phone: string;
   address_line1: string;
   address_line2?: string;
@@ -35,7 +35,7 @@ export default function AddressesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [formData, setFormData] = useState({
-    full_name: '',
+    name: '',
     phone: '',
     address_line1: '',
     address_line2: '',
@@ -47,24 +47,19 @@ export default function AddressesPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/auth/signin');
-    }
+    if (!authLoading && !user) router.push('/auth/signin');
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (user) {
-      loadAddresses();
-    }
+    if (user) loadAddresses();
   }, [user]);
 
   const loadAddresses = async () => {
     if (!user) return;
-
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('addresses')
+        .from('user_addresses')
         .select('*')
         .eq('user_id', user.id)
         .order('is_default', { ascending: false })
@@ -90,26 +85,27 @@ export default function AddressesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!user) return;
 
     try {
       if (editingAddress) {
         const { error } = await supabase
-          .from('addresses')
+          .from('user_addresses')
           .update(formData)
           .eq('id', editingAddress.id);
-
         if (error) throw error;
         toast.success('Address updated successfully');
       } else {
+        // If this is the first address or marked default, unset others first
+        if (formData.is_default) {
+          await supabase
+            .from('user_addresses')
+            .update({ is_default: false })
+            .eq('user_id', user.id);
+        }
         const { error } = await supabase
-          .from('addresses')
-          .insert({
-            user_id: user.id,
-            ...formData
-          });
-
+          .from('user_addresses')
+          .insert({ user_id: user.id, ...formData });
         if (error) throw error;
         toast.success('Address added successfully');
       }
@@ -126,7 +122,7 @@ export default function AddressesPage() {
   const handleEdit = (address: Address) => {
     setEditingAddress(address);
     setFormData({
-      full_name: address.full_name,
+      name: address.name,
       phone: address.phone,
       address_line1: address.address_line1,
       address_line2: address.address_line2 || '',
@@ -141,34 +137,32 @@ export default function AddressesPage() {
 
   const handleDelete = async (addressId: string) => {
     if (!confirm('Are you sure you want to delete this address?')) return;
-
     try {
       const { error } = await supabase
-        .from('addresses')
+        .from('user_addresses')
         .delete()
         .eq('id', addressId);
-
       if (error) throw error;
-      toast.success('Address deleted successfully');
+      toast.success('Address deleted');
       loadAddresses();
     } catch (error) {
-      console.error('Error deleting address:', error);
       toast.error('Failed to delete address');
     }
   };
 
-  const handleSetDefault = async (addressId: string, addressType: string) => {
+  const handleSetDefault = async (addressId: string) => {
+    if (!user) return;
     try {
+      // Clear existing default then set new one
+      await supabase.from('user_addresses').update({ is_default: false }).eq('user_id', user.id);
       const { error } = await supabase
-        .from('addresses')
+        .from('user_addresses')
         .update({ is_default: true })
         .eq('id', addressId);
-
       if (error) throw error;
       toast.success('Default address updated');
       loadAddresses();
     } catch (error) {
-      console.error('Error setting default address:', error);
       toast.error('Failed to update default address');
     }
   };
@@ -176,7 +170,7 @@ export default function AddressesPage() {
   const resetForm = () => {
     setEditingAddress(null);
     setFormData({
-      full_name: '',
+      name: '',
       phone: '',
       address_line1: '',
       address_line2: '',
@@ -188,21 +182,15 @@ export default function AddressesPage() {
     });
   };
 
-
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading addresses...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mx-auto"></div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -216,14 +204,11 @@ export default function AddressesPage() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Addresses</h1>
-              <p className="text-gray-600">Manage your shipping and billing addresses</p>
+              <p className="text-gray-600">Manage your shipping addresses</p>
             </div>
           </div>
 
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -234,99 +219,51 @@ export default function AddressesPage() {
               <DialogHeader>
                 <DialogTitle>{editingAddress ? 'Edit Address' : 'Add New Address'}</DialogTitle>
                 <DialogDescription>
-                  {editingAddress ? 'Update your address details' : 'Add a new shipping or billing address'}
+                  {editingAddress ? 'Update your address details' : 'Add a new shipping address'}
                 </DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name *</Label>
-                    <Input
-                      id="full_name"
-                      name="full_name"
-                      value={formData.full_name}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="+94771234567"
-                      required
-                    />
+                    <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+94771234567" required />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="address_line1">Address Line 1 *</Label>
-                  <Input
-                    id="address_line1"
-                    name="address_line1"
-                    value={formData.address_line1}
-                    onChange={handleInputChange}
-                    placeholder="Street address"
-                    required
-                  />
+                  <Input id="address_line1" name="address_line1" value={formData.address_line1} onChange={handleInputChange} placeholder="Street address" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="address_line2">Address Line 2</Label>
-                  <Input
-                    id="address_line2"
-                    name="address_line2"
-                    value={formData.address_line2}
-                    onChange={handleInputChange}
-                    placeholder="Apartment, suite, etc. (optional)"
-                  />
+                  <Input id="address_line2" name="address_line2" value={formData.address_line2} onChange={handleInputChange} placeholder="Apartment, suite, etc. (optional)" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="city" name="city" value={formData.city} onChange={handleInputChange} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State/Province</Label>
-                    <Input
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                    />
+                    <Input id="state" name="state" value={formData.state} onChange={handleInputChange} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="postal_code">Postal Code</Label>
-                    <Input
-                      id="postal_code"
-                      name="postal_code"
-                      value={formData.postal_code}
-                      onChange={handleInputChange}
-                    />
+                    <Input id="postal_code" name="postal_code" value={formData.postal_code} onChange={handleInputChange} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="country">Country *</Label>
-                    <Input
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="country" name="country" value={formData.country} onChange={handleInputChange} required />
                   </div>
                 </div>
 
@@ -337,7 +274,7 @@ export default function AddressesPage() {
                     name="is_default"
                     checked={formData.is_default}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 rounded border-gray-300"
                   />
                   <Label htmlFor="is_default">Set as default address</Label>
                 </div>
@@ -346,14 +283,7 @@ export default function AddressesPage() {
                   <Button type="submit" className="flex-1">
                     {editingAddress ? 'Update Address' : 'Add Address'}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsDialogOpen(false);
-                      resetForm();
-                    }}
-                  >
+                  <Button type="button" variant="outline" onClick={() => { setIsDialogOpen(false); resetForm(); }}>
                     Cancel
                   </Button>
                 </div>
@@ -367,9 +297,7 @@ export default function AddressesPage() {
             <CardContent className="p-12 text-center">
               <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No addresses yet</h3>
-              <p className="text-gray-600 mb-6">
-                Add your first address to make checkout faster
-              </p>
+              <p className="text-gray-600 mb-6">Add your first address to make checkout faster</p>
               <Button onClick={() => setIsDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Address
@@ -379,19 +307,22 @@ export default function AddressesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {addresses.map((address) => (
-              <Card key={address.id} className={address.is_default ? 'ring-2 ring-blue-500' : ''}>
-                <CardHeader className="flex flex-row items-start justify-between space-y-0">
+              <Card key={address.id} className={address.is_default ? 'ring-2 ring-rose-500' : ''}>
+                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <CardTitle className="text-lg">{address.city}</CardTitle>
+                    <MapPin className="h-4 w-4 text-rose-500" />
+                    <CardTitle className="text-base">{address.city}</CardTitle>
                     {address.is_default && (
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     )}
                   </div>
+                  {address.is_default && (
+                    <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-medium">Default</span>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <p className="font-medium text-gray-900">{address.full_name}</p>
+                    <p className="font-medium text-gray-900">{address.name}</p>
                     <p className="text-sm text-gray-600">{address.phone}</p>
                   </div>
                   <div className="text-sm text-gray-700">
@@ -406,28 +337,14 @@ export default function AddressesPage() {
                   </div>
                   <div className="flex gap-2 pt-2">
                     {!address.is_default && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSetDefault(address.id, 'shipping')}
-                        className="flex-1"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleSetDefault(address.id)} className="flex-1">
                         Set Default
                       </Button>
                     )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(address)}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(address)}>
                       <Edit className="h-3 w-3" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(address.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => handleDelete(address.id)} className="text-red-600 hover:text-red-700">
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
