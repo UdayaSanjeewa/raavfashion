@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 const SLIDES = [
   {
-    image: 'https://images.pexels.com/photos/2220316/pexels-photo-2220316.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    image: 'https://i.postimg.cc/fTrwbLpq/11.jpg',
     eyebrow: 'New Arrivals',
     headline: 'Effortless\nElegance',
     sub: 'Discover the new season collection',
@@ -15,7 +15,7 @@ const SLIDES = [
     align: 'left' as const,
   },
   {
-    image: 'https://images.pexels.com/photos/842811/pexels-photo-842811.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    image: 'https://i.postimg.cc/bNHxX7BF/16.jpg',
     eyebrow: "Men's Collection",
     headline: 'Dressed for\nEvery Moment',
     sub: 'Premium menswear, curated for you',
@@ -24,7 +24,7 @@ const SLIDES = [
     align: 'right' as const,
   },
   {
-    image: 'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    image: 'https://i.postimg.cc/d0zkZ6fx/25.jpg',
     eyebrow: 'Traditional Wear',
     headline: 'Heritage\nMeets Modern',
     sub: 'Authentic ethnic wear for every occasion',
